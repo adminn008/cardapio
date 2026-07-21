@@ -3,55 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sabor & Cia - Marmitaria Gourmet</title>
+  <title>Sabor & Cia - Delivery Gourmet</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- BANNER DE CABEÇALHO COM GRADIENTE -->
+  <!-- CABEÇALHO -->
   <header class="hero-header">
     <div class="header-content">
       <div class="logo-area">
         <span class="logo-emoji">🍲</span>
         <div>
           <h1>Sabor & Cia</h1>
-          <p>Marmitas Caseiras & Lanches Artesanais</p>
+          <p>Marmitas & Lanches Artesanais</p>
         </div>
       </div>
-      <div id="status-loja" class="status-badge checking">Verificando...</div>
+      <div id="status-loja" class="status-badge open">🟢 Aberto Agora</div>
     </div>
   </header>
 
-  <!-- BANNER AVISO SE LOJA FECHADA -->
-  <div id="banner-fechado" class="banner-aviso hidden">
-    🔔 <strong>Estamos fora do horário de pico!</strong> Seu pedido será recebido como <span>Agendado</span> para o próximo turno de entregas.
-  </div>
+  <!-- NAVEGAÇÃO / CATEGORIAS -->
+  <nav class="categories-bar">
+    <button class="cat-btn active" onclick="filtrarCategoria('todas')">🍽️ Todos</button>
+    <button class="cat-btn" onclick="filtrarCategoria('marmita')">🍱 Marmitas</button>
+    <button class="cat-btn" onclick="filtrarCategoria('lanche')">🍔 Lanches</button>
+    <button class="cat-btn" onclick="filtrarCategoria('bebida')">🥤 Bebidas</button>
+    <button class="cat-btn" onclick="filtrarCategoria('sobremesa')">🍰 Sobremesas</button>
+  </nav>
 
-  <div class="main-container">
+  <main class="main-container">
     
-    <!-- ÁREA DE PRODUTOS -->
-    <section class="products-section">
-      
-      <!-- Barra de Pesquisa e Filtros -->
+    <!-- ETAPA 1: CARDÁPIO -->
+    <section id="step-menu" class="step-section active">
       <div class="search-box">
         <span>🔍</span>
-        <input type="text" id="search-input" placeholder="Buscar prato, lanche, bebida..." onkeyup="filtrarProdutos()">
-      </div>
-
-      <div class="section-title">
-        <h2>Cardápio do Dia</h2>
-        <span class="subtitle">Feito na hora com ingredientes frescos</span>
+        <input type="text" id="search-input" placeholder="Buscar no cardápio..." onkeyup="filtrarProdutos()">
       </div>
 
       <div class="menu-grid" id="menu-grid">
         
-        <!-- CARD 1 -->
-        <div class="food-card" data-nome="marmita feijoada executiva">
+        <!-- ITEM 1 -->
+        <div class="food-card" data-cat="marmita" data-nome="feijoada completa marmita">
           <div class="card-badge fire">Mais Pedido 🔥</div>
           <div class="food-info">
             <h3>Feijoada Completa (G)</h3>
-            <p>Arroz branco, couve refogada, farofa da casa, torresmo e bisteca.</p>
+            <p>Arroz, couve refogada, farofa da casa, torresmo e bisteca suína.</p>
             <span class="food-price">R$ 26,90</span>
           </div>
           <div class="card-actions">
@@ -61,11 +58,11 @@
           </div>
         </div>
 
-        <!-- CARD 2 -->
-        <div class="food-card" data-nome="marmita bife acebolado comercial">
+        <!-- ITEM 2 -->
+        <div class="food-card" data-cat="marmita" data-nome="bife acebolado marmita">
           <div class="food-info">
             <h3>Bife Acebolado (M)</h3>
-            <p>Arroz, feijão carioquinha, bife acebolado e batata frita crocante.</p>
+            <p>Arroz, feijão carioquinha, bife acebolado e batata crocante.</p>
             <span class="food-price">R$ 21,90</span>
           </div>
           <div class="card-actions">
@@ -75,12 +72,12 @@
           </div>
         </div>
 
-        <!-- CARD 3 -->
-        <div class="food-card" data-nome="x-tudo artesanal lanche">
+        <!-- ITEM 3 -->
+        <div class="food-card" data-cat="lanche" data-nome="x-tudo artesanal hamburguer">
           <div class="card-badge chef">Recomendado 👨‍🍳</div>
           <div class="food-info">
             <h3>X-Tudo Especial</h3>
-            <p>Pão brioche, hambúrguer 150g, queijo, bacon, ovo, salada e maionese verde.</p>
+            <p>Pão brioche, hambúrguer 150g, queijo, bacon, ovo e maionese verde.</p>
             <span class="food-price">R$ 24,00</span>
           </div>
           <div class="card-actions">
@@ -90,11 +87,25 @@
           </div>
         </div>
 
-        <!-- CARD 4 -->
-        <div class="food-card" data-nome="coca cola guaraná bebida">
+        <!-- ITEM 4 -->
+        <div class="food-card" data-cat="lanche" data-nome="smash burger duplo">
+          <div class="food-info">
+            <h3>Smash Duplo Cheddar</h3>
+            <p>2x Smash burger 90g, cheddar duplo cremoso e cebola caramelizada.</p>
+            <span class="food-price">R$ 22,50</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-qty" onclick="alterarQtd('smash', -1)">-</button>
+            <span class="qty-num" id="qty-smash">0</span>
+            <button class="btn-qty add" onclick="alterarQtd('smash', 1)">+</button>
+          </div>
+        </div>
+
+        <!-- ITEM 5 -->
+        <div class="food-card" data-cat="bebida" data-nome="refrigerante coca guarana">
           <div class="food-info">
             <h3>Refrigerante Lata 350ml</h3>
-            <p>Geladinho! Escolha o sabor nas observações.</p>
+            <p>Coca-Cola, Guaraná Antarctica ou Fanta bem gelados.</p>
             <span class="food-price">R$ 6,00</span>
           </div>
           <div class="card-actions">
@@ -104,55 +115,70 @@
           </div>
         </div>
 
+        <!-- ITEM 6 -->
+        <div class="food-card" data-cat="sobremesa" data-nome="pudim de leite moça">
+          <div class="food-info">
+            <h3>Pudim de Leite Cremoso</h3>
+            <p>Fatia generosa com bastante calda de caramelo caseira.</p>
+            <span class="food-price">R$ 8,50</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-qty" onclick="alterarQtd('pudim', -1)">-</button>
+            <span class="qty-num" id="qty-pudim">0</span>
+            <button class="btn-qty add" onclick="alterarQtd('pudim', 1)">+</button>
+          </div>
+        </div>
+
       </div>
     </section>
 
-    <!-- ÁREA DE CHECKOUT / DADOS -->
-    <section class="checkout-section" id="checkout-area">
-      <div class="checkout-card">
-        <h2> Finalizar Pedido</h2>
+    <!-- ETAPA 2: DADOS DE ENTREGA E PAGAMENTO (SÓ APARECE AO CLICAR EM PEDIR) -->
+    <section id="step-checkout" class="step-section hidden">
+      <button class="btn-back" onclick="irParaEtapa('menu')">← Voltar ao Cardápio</button>
+      
+      <div class="checkout-card animate-slide-up">
+        <h2>📝 Dados de Entrega e Pagamento</h2>
         
         <form id="form-pedido">
-          
           <div class="input-field">
-            <label>Seu Nome *</label>
-            <input type="text" id="nome" placeholder="Ex: Wellington Silva" required>
+            <label>Nome Completo *</label>
+            <input type="text" id="nome" placeholder="Digite seu nome" required oninput="salvarFormulario()">
           </div>
 
           <div class="input-field">
             <label>WhatsApp / Celular *</label>
-            <input type="tel" id="telefone" placeholder="(00) 90000-0000" required>
+            <input type="tel" id="telefone" placeholder="(00) 90000-0000" maxlength="15" required oninput="mascaraTelefone(this); salvarFormulario();">
           </div>
 
-          <!-- CEP AUTOMÁTICO -->
+          <!-- CEP COM CÁLCULO DINÂMICO -->
           <div class="cep-group">
             <div class="input-field">
               <label>CEP de Entrega *</label>
-              <input type="text" id="cep" placeholder="00000-000" maxlength="9" onblur="consultarCEP()" required>
+              <input type="text" id="cep" placeholder="00000-000" maxlength="9" onblur="consultarCEP()" oninput="salvarFormulario()" required>
             </div>
-            <button type="button" class="btn-buscacep" onclick="consultarCEP()">Buscar</button>
+            <button type="button" class="btn-buscacep" onclick="consultarCEP()">Calcular Taxa</button>
           </div>
           <span id="cep-status" class="cep-status"></span>
 
           <div class="input-field">
             <label>Endereço e Bairro *</label>
-            <input type="text" id="endereco" placeholder="Rua, Número e Bairro" required>
+            <input type="text" id="endereco" placeholder="Rua, Número e Bairro" required oninput="salvarFormulario()">
           </div>
 
           <div class="input-field">
-            <label>Complemento / Referência</label>
-            <input type="text" id="complemento" placeholder="Ex: Bloco B, Ap 202 / Ao lado do mercado">
+            <label>Complemento / Ponto de Referência</label>
+            <input type="text" id="complemento" placeholder="Ex: Ap 102, Bloco C / Em frente à padaria" oninput="salvarFormulario()">
           </div>
 
           <div class="input-field">
             <label>Observações do Pedido</label>
-            <textarea id="obs" rows="2" placeholder="Sem cebola, troco para 50, etc..."></textarea>
+            <textarea id="obs" rows="2" placeholder="Sem cebola, tirar maionese, troco para R$ 50..." oninput="salvarFormulario()"></textarea>
           </div>
 
           <div class="input-field">
             <label>Forma de Pagamento *</label>
-            <select id="pagamento" required onchange="mudarPagamento()">
-              <option value="">Selecione...</option>
+            <select id="pagamento" required onchange="mudarPagamento(); salvarFormulario();">
+              <option value="">Selecione como deseja pagar...</option>
               <option value="PIX">PIX (Chave Copia e Cola)</option>
               <option value="Cartão de Crédito">Cartão de Crédito (Na Maquininha)</option>
               <option value="Cartão de Débito">Cartão de Débito (Na Maquininha)</option>
@@ -160,44 +186,56 @@
             </select>
           </div>
 
-          <!-- PIX BOX -->
-          <div id="pix-box" class="pix-card hidden">
-            <p><strong>Chave PIX:</strong> <code>00.000.000/0001-00</code></p>
-            <small>Pague pelo seu banco após confirmar!</small>
+          <div id="pix-box" class="pix-card hidden animate-fade-in">
+            <p><strong>Chave PIX (CNPJ):</strong> <code>12.345.678/0001-99</code></p>
+            <small>Chave pronta para colar no seu banco pós-confirmação.</small>
           </div>
 
           <!-- RESUMO FINANCEIRO -->
           <div class="resumo-financeiro">
             <div class="linha-resumo">
-              <span>Subtotal:</span>
+              <span>Subtotal Itens:</span>
               <span id="subtotal-txt">R$ 0,00</span>
             </div>
             <div class="linha-resumo">
               <span>Taxa de Entrega:</span>
-              <span id="taxa-txt">R$ 0,00</span>
+              <span id="taxa-txt" class="taxa-highlight">A calcular pelo CEP</span>
             </div>
             <hr>
             <div class="linha-resumo total">
-              <span>Total:</span>
+              <span>Total a Pagar:</span>
               <span id="total-txt">R$ 0,00</span>
             </div>
           </div>
 
           <button type="submit" id="btn-finalizar" class="btn-main-submit">
-            ✅ Enviar Pedido
+            🚀 Confirmar & Enviar no WhatsApp
           </button>
         </form>
       </div>
     </section>
 
-  </div>
+    <!-- ETAPA 3: TELA DE SUCESSO / PEDIDO CONCLUÍDO -->
+    <section id="step-success" class="step-section hidden">
+      <div class="success-card animate-pop">
+        <div class="success-icon">🎉</div>
+        <h2>Pedido Enviado com Sucesso!</h2>
+        <p>Acompanhe o status e a entrega diretamente com nosso atendente no WhatsApp.</p>
+        
+        <div class="success-actions">
+          <button class="btn-reset" onclick="reiniciarPedido()">🔄 Voltar ao Início / Novo Pedido</button>
+        </div>
+      </div>
+    </section>
 
-  <!-- BARRA FLUTUANTE DO CARRINHO (ESTILO IFOOD) -->
-  <div id="floating-cart" class="floating-cart hidden" onclick="rolarParaCheckout()">
+  </main>
+
+  <!-- BARRA FLUTUANTE DE CARRINHO (SÓ APARECE QUANDO HÁ ITENS) -->
+  <div id="floating-cart" class="floating-cart hidden animate-bounce" onclick="irParaCheckout()">
     <div class="cart-info">
       <span class="cart-icon">🛒</span>
       <span id="cart-count-badge" class="count-badge">0</span>
-      <span>Ver meu pedido</span>
+      <span>Fazer Pedido</span>
     </div>
     <span id="floating-total" class="cart-total">R$ 0,00</span>
   </div>
