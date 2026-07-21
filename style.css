@@ -1,0 +1,193 @@
+:root {
+  --primary: #e63946;
+  --primary-hover: #c1121f;
+  --bg-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-color: #2b2d42;
+  --accent-green: #2a9d8f;
+  --border-radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  padding-bottom: 40px;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #1d3557, #457b9d);
+  color: white;
+  text-align: center;
+  padding: 30px 15px;
+}
+
+.header h1 { margin-bottom: 5px; }
+
+.badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  background: #6c757d;
+}
+.badge.aberto { background: var(--accent-green); }
+.badge.fechado { background: #e76f51; }
+
+.banner-fechado {
+  background-color: #fff3cd;
+  color: #856404;
+  border-left: 5px solid #ffeba1;
+  padding: 12px 20px;
+  max-width: 900px;
+  margin: 15px auto 0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* LAYOUT CONTAINER */
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+/* CARDS DO CARDÁPIO */
+.cardapio-section, .form-section {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin-bottom: 15px;
+  border-bottom: 2px solid var(--bg-color);
+  padding-bottom: 8px;
+}
+
+.menu-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.menu-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+}
+
+.card-info h3 { font-size: 1rem; }
+.card-info p { font-size: 0.85rem; color: #6c757d; margin: 4px 0; }
+.preco { font-weight: bold; color: var(--accent-green); }
+
+.card-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-controls button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: #e9ecef;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.card-controls button:hover { background: #dee2e6; }
+
+/* FORMULÁRIO */
+.input-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.input-group input, .input-group select, .input-group textarea {
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.pix-box {
+  background: #e8f5e9;
+  border: 1px dashed var(--accent-green);
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.pix-box input {
+  width: 100%;
+  margin-top: 5px;
+  padding: 6px;
+  font-weight: bold;
+}
+
+/* RESUMO E BOTAO */
+.resumo-box {
+  background: #f1f3f5;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.resumo-box p { font-size: 0.9rem; margin-bottom: 5px; }
+.resumo-box h3 { font-size: 1.2rem; color: var(--primary); margin-top: 5px; }
+
+.btn-submit {
+  width: 100%;
+  margin-top: 15px;
+  padding: 14px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-submit:hover { background-color: var(--primary-hover); }
+
+/* UTILITÁRIOS */
+.hidden { display: none !important; }
+
