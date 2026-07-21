@@ -13,11 +13,21 @@ const PRECOS = {
 let carrinho = { feijoada: 0, bife: 0, xtudo: 0, smash: 0, refri: 0, pudim: 0 };
 let taxaEntregaCalculada = null;
 
-// 1. MÁSCARA AUTOMÁTICA DE TELEFONE (XX) XXXXX-XXXX
+// 1. MÁSCARA AUTOMÁTICA DE TELEFONE (XX) XXXXX-XXXX / (XX) XXXX-XXXX
 function mascaraTelefone(input) {
   let v = input.value.replace(/\D/g, "");
-  v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
-  v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+  if (v.length > 11) v = v.slice(0, 11);
+  
+  if (v.length > 10) {
+    v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+  } else if (v.length > 6) {
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, "($1) $2-$3");
+  } else if (v.length > 2) {
+    v = v.replace(/^(\d{2})(\d{0,5})$/, "($1) $2");
+  } else {
+    v = v.replace(/^(\d*)$/, "($1");
+  }
+  
   input.value = v;
 }
 
@@ -81,12 +91,14 @@ function atualizarResumo() {
 
   // Atualiza Barra Flutuante
   const floatingCart = document.getElementById("floating-cart");
-  if (totalItens > 0) {
-    floatingCart.classList.remove("hidden");
-    document.getElementById("cart-count-badge").textContent = totalItens;
-    document.getElementById("floating-total").textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
-  } else {
-    floatingCart.classList.add("hidden");
+  if (floatingCart) {
+    if (totalItens > 0) {
+      floatingCart.classList.remove("hidden");
+      document.getElementById("cart-count-badge").textContent = totalItens;
+      document.getElementById("floating-total").textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+    } else {
+      floatingCart.classList.add("hidden");
+    }
   }
 }
 
@@ -121,9 +133,13 @@ async function consultarCEP() {
 }
 
 // 5. FILTRAGEM POR CATEGORIA E BUSCA
-function filtrarCategoria(cat) {
+function filtrarCategoria(cat, elemento) {
   document.querySelectorAll(".cat-btn").forEach(btn => btn.classList.remove("active"));
-  event.target.classList.add("active");
+  if (elemento) {
+    elemento.classList.add("active");
+  } else if (window.event && window.event.target) {
+    window.event.target.classList.add("active");
+  }
 
   const cards = document.querySelectorAll(".food-card");
   cards.forEach(card => {
@@ -223,58 +239,61 @@ function reiniciarPedido() {
   irParaEtapa("menu");
 }
 
-// 8. ENVIO DO FORMULÁRIO
-document.getElementById("form-pedido").addEventListener("submit", function(e) {
-  e.preventDefault();
+// 8. INICIALIZAÇÃO E ENVIO DO FORMULÁRIO
+document.addEventListener("DOMContentLoaded", function() {
+  const form = document.getElementById("form-pedido");
+  if (form) {
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
 
-  const nome = document.getElementById("nome").value;
-  const tel = document.getElementById("telefone").value;
-  const end = document.getElementById("endereco").value;
-  const comp = document.getElementById("complemento").value || "-";
-  const obs = document.getElementById("obs").value || "Nenhuma";
-  const pag = document.getElementById("pagamento").value;
-  const total = document.getElementById("total-txt").textContent;
+      const nome = document.getElementById("nome").value;
+      const tel = document.getElementById("telefone").value;
+      const end = document.getElementById("endereco").value;
+      const comp = document.getElementById("complemento").value || "-";
+      const obs = document.getElementById("obs").value || "Nenhuma";
+      const pag = document.getElementById("pagamento").value;
+      const total = document.getElementById("total-txt").textContent;
 
-  let listaItens = [];
-  if (carrinho.feijoada > 0) listaItens.push(`${carrinho.feijoada}x Feijoada G`);
-  if (carrinho.bife > 0) listaItens.push(`${carrinho.bife}x Bife Acebolado M`);
-  if (carrinho.xtudo > 0) listaItens.push(`${carrinho.xtudo}x X-Tudo`);
-  if (carrinho.smash > 0) listaItens.push(`${carrinho.smash}x Smash Duplo`);
-  if (carrinho.refri > 0) listaItens.push(`${carrinho.refri}x Refri Lata`);
-  if (carrinho.pudim > 0) listaItens.push(`${carrinho.pudim}x Pudim`);
+      let listaItens = [];
+      if (carrinho.feijoada > 0) listaItens.push(`${carrinho.feijoada}x Feijoada G`);
+      if (carrinho.bife > 0) listaItens.push(`${carrinho.bife}x Bife Acebolado M`);
+      if (carrinho.xtudo > 0) listaItens.push(`${carrinho.xtudo}x X-Tudo`);
+      if (carrinho.smash > 0) listaItens.push(`${carrinho.smash}x Smash Duplo`);
+      if (carrinho.refri > 0) listaItens.push(`${carrinho.refri}x Refri Lata`);
+      if (carrinho.pudim > 0) listaItens.push(`${carrinho.pudim}x Pudim`);
 
-  const textoItens = listaItens.join(", ");
+      const textoItens = listaItens.join(", ");
 
-  // Envio pra planilha do Google
-  if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        data: new Date().toLocaleString("pt-BR"),
-        nome, tel, endereco: `${end} (${comp})`,
-        itens: textoItens, obs, pagamento: pag, total
-      })
+      // Envio pra planilha do Google
+      if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            data: new Date().toLocaleString("pt-BR"),
+            nome, tel, endereco: `${end} (${comp})`,
+            itens: textoItens, obs, pagamento: pag, total
+          })
+        });
+      }
+
+      // Gera texto no WhatsApp
+      const msg = `*NOVO PEDIDO NO SITE!*%0A%0A` +
+        `👤 *Cliente:* ${nome}%0A` +
+        `📞 *Telefone:* ${tel}%0A` +
+        `📍 *Endereço:* ${end}%0A` +
+        `🏠 *Comp:* ${comp}%0A` +
+        `🛒 *Itens:* ${textoItens}%0A` +
+        `💳 *Pagamento:* ${pag}%0A` +
+        `📝 *Obs:* ${obs}%0A` +
+        `💰 *TOTAL:* ${total}`;
+
+      window.open(`https://wa.me/${SEU_WHATSAPP}?text=${msg}`, '_blank');
+      
+      irParaEtapa("success");
     });
   }
 
-  // Gera texto no WhatsApp
-  const msg = `*NOVO PEDIDO NO SITE!*%0A%0A` +
-    `👤 *Cliente:* ${nome}%0A` +
-    `📞 *Telefone:* ${tel}%0A` +
-    `📍 *Endereço:* ${end}%0A` +
-    `🏠 *Comp:* ${comp}%0A` +
-    `🛒 *Itens:* ${textoItens}%0A` +
-    `💳 *Pagamento:* ${pag}%0A` +
-    `📝 *Obs:* ${obs}%0A` +
-    `💰 *TOTAL:* ${total}`;
-
-  window.open(`https://wa.me/${SEU_WHATSAPP}?text=${msg}`, '_blank');
-  
-  irParaEtapa("success");
-});
-
-window.onload = function() {
   carregarEstadoSalvo();
-};
+});
