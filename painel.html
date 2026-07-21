@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Pedidos - KDS Sabor & Cia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: #121214; color: #e1e1e6; padding: 15px; min-height: 100vh; }
+
+    /* TOPO DO PAINEL */
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #202024; padding: 15px 20px; border-radius: 12px;
+      margin-bottom: 20px; border: 1px solid #29292e;
+    }
+    .status-painel h1 { font-size: 1.4rem; color: #00875f; display: flex; align-items: center; gap: 8px; }
+    .status-painel span { font-size: 0.9rem; color: #a8a8b3; font-weight: normal; }
+    .indicadores { display: flex; gap: 20px; text-align: right; }
+    .card-info { background: #121214; padding: 8px 15px; border-radius: 8px; border: 1px solid #29292e; }
+    .card-info label { display: block; font-size: 0.75rem; color: #8d8d99; }
+    .card-info strong { font-size: 1.2rem; color: #00b37e; }
+
+    /* GRID DIVIDIDA PARA VÁRIOS PEDIDOS */
+    .grid-pedidos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 15px;
+    }
+
+    /* CARD DO PEDIDO */
+    .card-pedido {
+      background: #202024; border-radius: 12px; padding: 15px;
+      border: 2px solid #29292e; display: flex; flex-direction: column;
+      justify-content: space-between; position: relative; transition: all 0.3s;
+    }
+
+    /* DESTAQUE DE NOVO PEDIDO (30 segundos) */
+    .card-pedido.novo-pedido {
+      border-color: #fba94c;
+      box-shadow: 0 0 15px rgba(251, 169, 76, 0.3);
+      animation: pulso 2s infinite;
+    }
+    @keyframes pulso {
+      0% { border-color: #fba94c; }
+      50% { border-color: #e16e0e; }
+      100% { border-color: #fba94c; }
+    }
+
+    .pedido-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #29292e; padding-bottom: 10px; margin-bottom: 10px;
+    }
+    .num-pedido { font-size: 1.2rem; font-weight: 800; color: #fba94c; }
+    .hora-pedido { font-size: 0.85rem; color: #8d8d99; background: #121214; padding: 4px 8px; border-radius: 4px; }
+
+    .cliente-info { margin-bottom: 10px; line-height: 1.4; }
+    .cliente-nome { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .cliente-end { font-size: 0.9rem; color: #c4c4cc; }
+    .cliente-detalhes { font-size: 0.85rem; color: #8d8d99; margin-top: 4px; }
+
+    .itens-lista {
+      background: #121214; padding: 10px; border-radius: 8px;
+      margin: 10px 0; font-size: 0.95rem; color: #e1e1e6; line-height: 1.5;
+    }
+
+    .obs-box {
+      background: #29292e; padding: 8px; border-radius: 6px;
+      font-size: 0.85rem; color: #fba94c; margin-bottom: 10px;
+    }
+
+    .financeiro-resumo {
+      display: flex; justify-content: space-between; font-size: 0.9rem;
+      color: #a8a8b3; margin-bottom: 15px; border-top: 1px dashed #29292e; pt-2;
+    }
+    .val-total { color: #00b37e; font-weight: 800; font-size: 1.1rem; }
+
+    /* BOTÃO DE CONFIRMAÇÃO DUPLA */
+    .btn-concluir {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: #00875f; color: #fff; font-weight: 700; font-size: 1rem;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-concluir:hover { background: #00b37e; }
+    
+    /* Estado do 2º clique */
+    .btn-concluir.confirmar {
+      background: #da3751 !important;
+      animation: balancar 0.3s;
+    }
+
+    @keyframes balancar {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+
+    .vazio-msg {
+      grid-column: 1 / -1; text-align: center; color: #8d8d99;
+      padding: 50px; font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="status-painel">
+      <h1>📺 Painel KDS <span>(Cozinha / Entrega)</span></h1>
+    </div>
+    <div class="indicadores">
+      <div class="card-info">
+        <label>Horário Atual</label>
+        <strong id="relogio-txt">00:00:00</strong>
+      </div>
+      <div class="card-info">
+        <label>Total Vendido Hoje</label>
+        <strong id="total-dia-txt">R$ 0,00</strong>
+      </div>
+    </div>
+  </header>
+
+  <main class="grid-pedidos" id="container-pedidos">
+    <!-- Pedidos entram aqui via JS -->
+  </main>
+
+  <script>
+    // 1. MANTER A TELA DO CELULAR/TV ACESA
+    async function ativarWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.log("Wake Lock não ativado:", err.message);
+      }
+    }
+    ativarWakeLock();
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === 'visible') ativarWakeLock();
+    });
+
+    // 2. RELÓGIO EM TEMPO REAL
+    function atualizarRelogio() {
+      const agora = new Date();
+      document.getElementById('relogio-txt').textContent = agora.toLocaleTimeString('pt-BR');
+    }
+    setInterval(atualizarRelogio, 1000);
+    atualizarRelogio();
+
+    // 3. ESTADO DOS PEDIDOS E TOTAL DO DIA
+    let totalDia = parseFloat(localStorage.getItem('faturamento_dia')) || 0;
+    
+    // Exemplo de lista inicial de pedidos (Pode ser alimentada pelo seu sistema)
+    let pedidosAtivos = [
+      {
+        id: 101,
+        hora: "19:42",
+        cliente: "Wellington Silva",
+        endereco: "Rua das Flores, 123 - Centro",
+        taxa: 5.00,
+        pagamento: "PIX",
+        itens: "1x Feijoada Completa (G), 1x Refri Lata",
+        obs: "Sem cebola na feijoada",
+        total: 32.90,
+        novo: true
+      },
+      {
+        id: 102,
+        hora: "19:48",
+        cliente: "Ana Maria",
+        endereco: "Av. Brasil, 500 - Ap 202",
+        taxa: 7.00,
+        pagamento: "Cartão de Crédito",
+        itens: "2x Smash Duplo Cheddar, 1x Pudim",
+        obs: "Troco para R$ 100 se for dinheiro",
+        total: 53.50,
+        novo: true
+      }
+    ];
+
+    function atualizarTotalDia() {
+      document.getElementById('total-dia-txt').textContent = 
+        totalDia.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      localStorage.setItem('faturamento_dia', totalDia);
+    }
+
+    // 4. RENDERIZAR OS CARDS NA TELA
+    function renderizarPedidos() {
+      const container = document.getElementById('container-pedidos');
+      container.innerHTML = "";
+
+      if (pedidosAtivos.length === 0) {
+        container.innerHTML = `<div class="vazio-msg">🛎️ Nenhum pedido pendente no momento.</div>`;
+        return;
+      }
+
+      pedidosAtivos.forEach((p, index) => {
+        const card = document.createElement('div');
+        card.className = `card-pedido ${p.novo ? 'novo-pedido' : ''}`;
+        
+        // Se clicar no card, remove o destaque de "novo pedido" para ver com calma
+        card.onclick = (e) => {
+          if (!e.target.classList.contains('btn-concluir')) {
+            p.novo = false;
+            card.classList.remove('novo-pedido');
+          }
+        };
+
+        card.innerHTML = `
+          <div>
+            <div class="pedido-header">
+              <span class="num-pedido">#${p.id}</span>
+              <span class="hora-pedido">🕒 ${p.hora}</span>
+            </div>
+
+            <div class="cliente-info">
+              <div class="cliente-nome">${p.cliente}</div>
+              <div class="cliente-end">📍 ${p.endereco}</div>
+              <div class="cliente-detalhes">💳 ${p.pagamento} | Taxa: R$ ${p.taxa.toFixed(2)}</div>
+            </div>
+
+            <div class="itens-lista">
+              <strong>Itens:</strong><br>${p.itens}
+            </div>
+
+            ${p.obs ? `<div class="obs-box">📝 <strong>Obs:</strong> ${p.obs}</div>` : ''}
+          </div>
+
+          <div>
+            <div class="financeiro-resumo">
+              <span>Total a Receber:</span>
+              <span class="val-total">R$ ${p.total.toFixed(2)}</span>
+            </div>
+
+            <button class="btn-concluir" onclick="tentarConcluir(this, ${index})">
+              ✅ Concluir Pedido
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+
+        // Remove o efeito piscando sozinho após 30 segundos se ninguém mexer
+        if (p.novo) {
+          setTimeout(() => {
+            p.novo = false;
+            card.classList.remove('novo-pedido');
+          }, 30000);
+        }
+      });
+    }
+
+    // 5. LÓGICA DE CONFIRMAÇÃO DUPLA NO BOTÃO
+    function tentarConcluir(btn, index) {
+      // Se já foi clicado uma vez, agora confirma e remove
+      if (btn.classList.contains('confirmar')) {
+        const pedido = pedidosAtivos[index];
+        totalDia += pedido.total;
+        atualizarTotalDia();
+
+        // Remove o pedido da lista
+        pedidosAtivos.splice(index, 1);
+        renderizarPedidos();
+      } else {
+        // Primeiro clique: muda de cor e texto pra pedir confirmação
+        btn.classList.add('confirmar');
+        btn.innerHTML = "⚠️ Clique de novo p/ Confirmar";
+
+        // Se passar 4 segundos sem clicar de novo, cancela a confirmação
+        setTimeout(() => {
+          if (btn) {
+            btn.classList.remove('confirmar');
+            btn.innerHTML = "✅ Concluir Pedido";
+          }
+        }, 4000);
+      }
+    }
+
+    // Inicializa tela
+    atualizarTotalDia();
+    renderizarPedidos();
+  </script>
+</body>
+</html>
+
