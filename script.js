@@ -1,155 +1,170 @@
-// CONFIGURAÇÕES DA SUA LOJA
-const GOOGLE_SCRIPT_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI";
-const TELEFONE_WHATSAPP = "5541999999999"; // Seu número completo com DDD
+const SCRIPT_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI";
+const SEU_WHATSAPP = "5541999999999"; // Digite seu número aqui com DDD
 
-// Preço dos itens
 const PRECOS = {
-  marmita_m: 22.00,
-  marmita_g: 28.00,
+  feijoada: 26.90,
+  bife: 21.90,
+  xtudo: 24.00,
   refri: 6.00
 };
 
-// Quantidades selecionadas
-let pedidoItens = {
-  marmita_m: 0,
-  marmita_g: 0,
-  refri: 0
-};
+let carrinho = { feijoada: 0, bife: 0, xtudo: 0, refri: 0 };
+let taxaEntregaAtual = 0;
 
-// 1. CHECAR HORÁRIO DE FUNCIONAMENTO (Ex: 11:00 às 14:00 e 18:00 às 22:00)
-function verificarHorario() {
-  const agora = new Date();
-  const hora = agora.getHours();
-  
-  const statusBadge = document.getElementById('status-loja');
-  const bannerFechado = document.getElementById('banner-fechado');
+// 1. CHECA HORÁRIO
+function checarHorario() {
+  const hora = new Date().getHours();
+  const estaAberto = (hora >= 11 && hora < 14) || (hora >= 18 && hora < 23);
+  const badge = document.getElementById("status-loja");
+  const banner = document.getElementById("banner-fechado");
 
-  // Define se está aberto
-  const abertoAlmoco = hora >= 11 && hora < 14;
-  const abertoJantar = hora >= 18 && hora < 22;
-
-  if (abertoAlmoco || abertoJantar) {
-    statusBadge.textContent = "🟢 Loja Aberta";
-    statusBadge.classList.add('aberto');
+  if (estaAberto) {
+    badge.textContent = "🟢 Aberto Agora";
+    badge.className = "status-badge open";
   } else {
-    statusBadge.textContent = "🔴 Loja Fechada (Recebendo Agendamento)";
-    statusBadge.classList.add('fechado');
-    bannerFechado.classList.remove('hidden');
+    badge.textContent = "🔴 Fechado";
+    badge.className = "status-badge closed";
+    banner.classList.remove("hidden");
   }
 }
 
-// 2. ALTERAR QUANTIDADE DOS ITENS
+// 2. ALTERA QUANTIDADE E ANIMA A BARRA FLUTUANTE
 function alterarQtd(item, valor) {
-  if (pedidoItens[item] + valor >= 0) {
-    pedidoItens[item] += valor;
-    document.getElementById(`qtd-${item}`).textContent = pedidoItens[item];
-    atualizarTotal();
+  if (carrinho[item] + valor >= 0) {
+    carrinho[item] += valor;
+    document.getElementById(`qty-${item}`).textContent = carrinho[item];
+    atualizarResumo();
   }
 }
 
-// 3. CALCULAR SUBTOTAL, TAXA DE ENTREGA E TOTAL GERAL
-function atualizarTotal() {
+function atualizarResumo() {
   let subtotal = 0;
-  
-  subtotal += pedidoItens.marmita_m * PRECOS.marmita_m;
-  subtotal += pedidoItens.marmita_g * PRECOS.marmita_g;
-  subtotal += pedidoItens.refri * PRECOS.refri;
+  let totalItens = 0;
 
-  const selectBairro = document.getElementById('bairro');
-  const taxaOption = selectBairro.options[selectBairro.selectedIndex];
-  const taxaEntrega = parseFloat(taxaOption.getAttribute('data-taxa') || 0);
+  subtotal += carrinho.feijoada * PRECOS.feijoada;
+  subtotal += carrinho.bife * PRECOS.bife;
+  subtotal += carrinho.xtudo * PRECOS.xtudo;
+  subtotal += carrinho.refri * PRECOS.refri;
 
-  const totalGeral = subtotal + taxaEntrega;
+  totalItens = Object.values(carrinho).reduce((a, b) => a + b, 0);
 
-  document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
-  document.getElementById('taxa-entrega').textContent = `R$ ${taxaEntrega.toFixed(2)}`;
-  document.getElementById('total-geral').textContent = `R$ ${totalGeral.toFixed(2)}`;
-}
+  const totalGeral = subtotal + taxaEntregaAtual;
 
-// 4. ALTERNAR VISIBILIDADE DO QUADRO PIX
-function togglePagamentoInfo() {
-  const forma = document.getElementById('pagamento').value;
-  const pixBox = document.getElementById('pix-info');
-  
-  if (forma === "PIX") {
-    pixBox.classList.remove('hidden');
+  document.getElementById("subtotal-txt").textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+  document.getElementById("taxa-txt").textContent = `R$ ${taxaEntregaAtual.toFixed(2).replace('.', ',')}`;
+  document.getElementById("total-txt").textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+
+  // Atualiza Barra Flutuante estilo iFood
+  const floatingCart = document.getElementById("floating-cart");
+  if (totalItens > 0) {
+    floatingCart.classList.remove("hidden");
+    document.getElementById("cart-count-badge").textContent = totalItens;
+    document.getElementById("floating-total").textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
   } else {
-    pixBox.classList.add('hidden');
+    floatingCart.classList.add("hidden");
   }
 }
 
-// 5. PROCESSAR E ENVIAR PEDIDO
-document.getElementById('form-pedido').addEventListener('submit', function(e) {
+// 3. ROLAGEM SUAVE ATÉ O CHECKOUT
+function rolarParaCheckout() {
+  document.getElementById("checkout-area").scrollIntoView({ behavior: "smooth" });
+}
+
+// 4. API DO VIACEP (BUSCA CEP AUTOMÁTICA)
+async function consultarCEP() {
+  const cepInput = document.getElementById("cep").value.replace(/\D/g, "");
+  const statusTxt = document.getElementById("cep-status");
+
+  if (cepInput.length === 8) {
+    statusTxt.textContent = "Buscando endereço...";
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cepInput}/json/`);
+      const data = await res.json();
+
+      if (!data.erro) {
+        document.getElementById("endereco").value = `${data.logradouro}, - Bairro: ${data.bairro}`;
+        statusTxt.textContent = `📍 Endereço localizado em ${data.localidade}!`;
+        
+        // Exemplo de regra simples de taxa pelo CEP
+        taxaEntregaAtual = 6.00; // Taxa padrão para a cidade
+        atualizarResumo();
+      } else {
+        statusTxt.textContent = "⚠️ CEP não encontrado! Digite seu endereço manualmente.";
+      }
+    } catch (err) {
+      statusTxt.textContent = "Erro ao buscar CEP.";
+    }
+  }
+}
+
+// 5. MUDAR FORMA DE PAGAMENTO
+function mudarPagamento() {
+  const val = document.getElementById("pagamento").value;
+  document.getElementById("pix-box").classList.toggle("hidden", val !== "PIX");
+}
+
+// 6. BUSCA DE PRODUTOS
+function filtrarProdutos() {
+  const termo = document.getElementById("search-input").value.toLowerCase();
+  const cards = document.querySelectorAll(".food-card");
+
+  cards.forEach(card => {
+    const nome = card.getAttribute("data-nome");
+    card.style.display = nome.includes(termo) ? "flex" : "none";
+  });
+}
+
+// 7. ENVIO DO FORMULÁRIO
+document.getElementById("form-pedido").addEventListener("submit", function(e) {
   e.preventDefault();
 
-  // Garante que o cliente escolheu pelo menos 1 item
-  const totalItens = Object.values(pedidoItens).reduce((a, b) => a + b, 0);
+  const totalItens = Object.values(carrinho).reduce((a, b) => a + b, 0);
   if (totalItens === 0) {
-    alert("Por favor, adicione pelo menos 1 item ao seu pedido!");
+    alert("Adicione pelo menos 1 item antes de enviar!");
     return;
   }
 
-  // Coleta dados
-  const nome = document.getElementById('nome').value;
-  const telefone = document.getElementById('telefone').value;
-  const bairro = document.getElementById('bairro').value;
-  const endereco = document.getElementById('endereco').value;
-  const obs = document.getElementById('observacao').value || "Nenhuma";
-  const pagamento = document.getElementById('pagamento').value;
-  const total = document.getElementById('total-geral').textContent;
+  const nome = document.getElementById("nome").value;
+  const tel = document.getElementById("telefone").value;
+  const end = document.getElementById("endereco").value;
+  const comp = document.getElementById("complemento").value || "-";
+  const obs = document.getElementById("obs").value || "Nenhuma";
+  const pag = document.getElementById("pagamento").value;
+  const total = document.getElementById("total-txt").textContent;
 
-  // Monta o resumo dos itens em texto
-  let resumoItens = [];
-  if (pedidoItens.marmita_m > 0) resumoItens.push(`${pedidoItens.marmita_m}x Marmita M`);
-  if (pedidoItens.marmita_g > 0) resumoItens.push(`${pedidoItens.marmita_g}x Marmita G`);
-  if (pedidoItens.refri > 0) resumoItens.push(`${pedidoItens.refri}x Refri Lata`);
-  
-  const textoItens = resumoItens.join(", ");
+  let listaItens = [];
+  if (carrinho.feijoada > 0) listaItens.push(`${carrinho.feijoada}x Feijoada G`);
+  if (carrinho.bife > 0) listaItens.push(`${carrinho.bife}x Bife Acebolado M`);
+  if (carrinho.xtudo > 0) listaItens.push(`${carrinho.xtudo}x X-Tudo`);
+  if (carrinho.refri > 0) listaItens.push(`${carrinho.refri}x Refri Lata`);
 
-  const dadosPedido = {
-    data: new Date().toLocaleString("pt-BR"),
-    nome: nome,
-    telefone: telefone,
-    bairro: bairro,
-    endereco: endereco,
-    itens: textoItens,
-    obs: obs,
-    pagamento: pagamento,
-    total: total
-  };
+  const textoItens = listaItens.join(", ");
 
-  const btnEnviar = document.getElementById('btn-enviar');
-  btnEnviar.disabled = true;
-  btnEnviar.textContent = "Enviando pedido...";
-
-  // Envia para o Google Sheets (se a URL estiver configurada)
-  if (GOOGLE_SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
-    fetch(GOOGLE_SCRIPT_URL, {
+  // Envio pra planilha
+  if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
+    fetch(SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dadosPedido)
-    }).catch(err => console.error("Erro ao salvar na planilha:", err));
+      body: JSON.stringify({
+        data: new Date().toLocaleString("pt-BR"),
+        nome, tel, endereco: `${end} (${comp})`,
+        itens: textoItens, obs, pagamento: pag, total
+      })
+    });
   }
 
-  // Gera mensagem para WhatsApp
-  const msgWhatsapp = `*NOVO PEDIDO DE LANCHE/MARMITA*%0A%0A` +
+  // Gera texto bonito no WhatsApp
+  const msg = `*NOVO PEDIDO NO SITE!*%0A%0A` +
     `👤 *Cliente:* ${nome}%0A` +
-    `📞 *Tel:* ${telefone}%0A` +
-    `📍 *Endereço:* ${endereco} (${bairro})%0A` +
+    `📍 *Endereço:* ${end}%0A` +
+    `🏠 *Comp:* ${comp}%0A` +
     `🛒 *Itens:* ${textoItens}%0A` +
+    `💳 *Pagamento:* ${pag}%0A` +
     `📝 *Obs:* ${obs}%0A` +
-    `💳 *Pagamento:* ${pagamento}%0A` +
-    `💰 *Total:* ${total}`;
+    `💰 *TOTAL:* ${total}`;
 
-  // Abre o WhatsApp para confirmação do cliente
-  setTimeout(() => {
-    window.location.href = `https://wa.me/${TELEFONE_WHATSAPP}?text=${msgWhatsapp}`;
-  }, 1000);
+  window.location.href = `https://wa.me/${SEU_WHATSAPP}?text=${msg}`;
 });
 
-// Inicialização
-window.onload = function() {
-  verificarHorario();
-};
-
+window.onload = checarHorario;
