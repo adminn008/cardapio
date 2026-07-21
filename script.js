@@ -240,60 +240,69 @@ function reiniciarPedido() {
 }
 
 // 8. INICIALIZAÇÃO E ENVIO DO FORMULÁRIO
-document.addEventListener("DOMContentLoaded", function() {
-  const form = document.getElementById("form-pedido");
-  if (form) {
-    form.addEventListener("submit", function(e) {
-      e.preventDefault();
+function processarEnvioPedido(e) {
+  e.preventDefault();
 
-      const nome = document.getElementById("nome").value;
-      const tel = document.getElementById("telefone").value;
-      const end = document.getElementById("endereco").value;
-      const comp = document.getElementById("complemento").value || "-";
-      const obs = document.getElementById("obs").value || "Nenhuma";
-      const pag = document.getElementById("pagamento").value;
-      const total = document.getElementById("total-txt").textContent;
+  const nome = document.getElementById("nome").value;
+  const tel = document.getElementById("telefone").value;
+  const end = document.getElementById("endereco").value;
+  const comp = document.getElementById("complemento")?.value || "-";
+  const obs = document.getElementById("obs")?.value || "Nenhuma";
+  const pag = document.getElementById("pagamento").value;
+  const total = document.getElementById("total-txt").textContent;
 
-      let listaItens = [];
-      if (carrinho.feijoada > 0) listaItens.push(`${carrinho.feijoada}x Feijoada G`);
-      if (carrinho.bife > 0) listaItens.push(`${carrinho.bife}x Bife Acebolado M`);
-      if (carrinho.xtudo > 0) listaItens.push(`${carrinho.xtudo}x X-Tudo`);
-      if (carrinho.smash > 0) listaItens.push(`${carrinho.smash}x Smash Duplo`);
-      if (carrinho.refri > 0) listaItens.push(`${carrinho.refri}x Refri Lata`);
-      if (carrinho.pudim > 0) listaItens.push(`${carrinho.pudim}x Pudim`);
+  let listaItens = [];
+  if (carrinho.feijoada > 0) listaItens.push(`${carrinho.feijoada}x Feijoada G`);
+  if (carrinho.bife > 0) listaItens.push(`${carrinho.bife}x Bife Acebolado M`);
+  if (carrinho.xtudo > 0) listaItens.push(`${carrinho.xtudo}x X-Tudo`);
+  if (carrinho.smash > 0) listaItens.push(`${carrinho.smash}x Smash Duplo`);
+  if (carrinho.refri > 0) listaItens.push(`${carrinho.refri}x Refri Lata`);
+  if (carrinho.pudim > 0) listaItens.push(`${carrinho.pudim}x Pudim`);
 
-      const textoItens = listaItens.join(", ");
+  const textoItens = listaItens.join(", ");
 
-      // Envio pra planilha do Google
-      if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            data: new Date().toLocaleString("pt-BR"),
-            nome, tel, endereco: `${end} (${comp})`,
-            itens: textoItens, obs, pagamento: pag, total
-          })
-        });
-      }
-
-      // Gera texto no WhatsApp
-      const msg = `*NOVO PEDIDO NO SITE!*%0A%0A` +
-        `👤 *Cliente:* ${nome}%0A` +
-        `📞 *Telefone:* ${tel}%0A` +
-        `📍 *Endereço:* ${end}%0A` +
-        `🏠 *Comp:* ${comp}%0A` +
-        `🛒 *Itens:* ${textoItens}%0A` +
-        `💳 *Pagamento:* ${pag}%0A` +
-        `📝 *Obs:* ${obs}%0A` +
-        `💰 *TOTAL:* ${total}`;
-
-      window.open(`https://wa.me/${SEU_WHATSAPP}?text=${msg}`, '_blank');
-      
-      irParaEtapa("success");
+  // Envio pra planilha do Google
+  if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: new Date().toLocaleString("pt-BR"),
+        nome, tel, endereco: `${end} (${comp})`,
+        itens: textoItens, obs, pagamento: pag, total
+      })
     });
   }
 
+  // Gera texto no WhatsApp
+  const msg = `*NOVO PEDIDO NO SITE!*%0A%0A` +
+    `👤 *Cliente:* ${nome}%0A` +
+    `📞 *Telefone:* ${tel}%0A` +
+    `📍 *Endereço:* ${end}%0A` +
+    `🏠 *Comp:* ${comp}%0A` +
+    `🛒 *Itens:* ${textoItens}%0A` +
+    `💳 *Pagamento:* ${pag}%0A` +
+    `📝 *Obs:* ${obs}%0A` +
+    `💰 *TOTAL:* ${total}`;
+
+  window.open(`https://wa.me/${SEU_WHATSAPP}?text=${msg}`, '_blank');
+  
+  irParaEtapa("success");
+}
+
+function inicializar() {
+  const form = document.getElementById("form-pedido");
+  if (form) {
+    form.removeEventListener("submit", processarEnvioPedido);
+    form.addEventListener("submit", processarEnvioPedido);
+  }
   carregarEstadoSalvo();
-});
+}
+
+// Executa mesmo se a página já tiver carregado
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", inicializar);
+} else {
+  inicializar();
+}
