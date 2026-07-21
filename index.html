@@ -20,24 +20,25 @@
         </div>
       </div>
       <div class="status-aberto">
-  <span class="ponto-pulso"></span>
-  Aberto agora
-</div>
+        <span class="ponto-pulso"></span>
+        Aberto agora
+      </div>
+    </div> <!-- Tag /div fechada corretamente aqui -->
   </header>
 
   <!-- NAVEGAÇÃO / CATEGORIAS -->
   <nav class="categories-bar">
-    <button class="cat-btn active" onclick="filtrarCategoria('todas')">🍽️ Todos</button>
-    <button class="cat-btn" onclick="filtrarCategoria('marmita')">🍱 Marmitas</button>
-    <button class="cat-btn" onclick="filtrarCategoria('lanche')">🍔 Lanches</button>
-    <button class="cat-btn" onclick="filtrarCategoria('bebida')">🥤 Bebidas</button>
-    <button class="cat-btn" onclick="filtrarCategoria('sobremesa')">🍰 Sobremesas</button>
+    <button class="cat-btn active" onclick="filtrarCategoria('todas', this)">🍽️ Todos</button>
+    <button class="cat-btn" onclick="filtrarCategoria('marmita', this)">🍱 Marmitas</button>
+    <button class="cat-btn" onclick="filtrarCategoria('lanche', this)">🍔 Lanches</button>
+    <button class="cat-btn" onclick="filtrarCategoria('bebida', this)">🥤 Bebidas</button>
+    <button class="cat-btn" onclick="filtrarCategoria('sobremesa', this)">🍰 Sobremesas</button>
   </nav>
 
   <main class="main-container">
     
     <!-- ETAPA 1: CARDÁPIO -->
-    <section id="step-menu" class="step-section active">
+    <section id="step-menu" class="step-section">
       <div class="search-box">
         <span>🔍</span>
         <input type="text" id="search-input" placeholder="Buscar no cardápio..." onkeyup="filtrarProdutos()">
@@ -134,7 +135,7 @@
       </div>
     </section>
 
-    <!-- ETAPA 2: DADOS DE ENTREGA E PAGAMENTO (SÓ APARECE AO CLICAR EM PEDIR) -->
+    <!-- ETAPA 2: DADOS DE ENTREGA E PAGAMENTO -->
     <section id="step-checkout" class="step-section hidden">
       <button class="btn-back" onclick="irParaEtapa('menu')">← Voltar ao Cardápio</button>
       
@@ -143,19 +144,19 @@
         
         <form id="form-pedido">
           <div class="input-field">
-            <label>Nome Completo *</label>
+            <label for="nome">Nome Completo *</label>
             <input type="text" id="nome" placeholder="Digite seu nome" required oninput="salvarFormulario()">
           </div>
 
           <div class="input-field">
-            <label>WhatsApp / Celular *</label>
+            <label for="telefone">WhatsApp / Celular *</label>
             <input type="tel" id="telefone" placeholder="(00) 90000-0000" maxlength="15" required oninput="mascaraTelefone(this); salvarFormulario();">
           </div>
 
           <!-- CEP COM CÁLCULO DINÂMICO -->
           <div class="cep-group">
             <div class="input-field">
-              <label>CEP de Entrega *</label>
+              <label for="cep">CEP de Entrega *</label>
               <input type="text" id="cep" placeholder="00000-000" maxlength="9" onblur="consultarCEP()" oninput="salvarFormulario()" required>
             </div>
             <button type="button" class="btn-buscacep" onclick="consultarCEP()">Calcular Taxa</button>
@@ -163,22 +164,22 @@
           <span id="cep-status" class="cep-status"></span>
 
           <div class="input-field">
-            <label>Endereço e Bairro *</label>
+            <label for="endereco">Endereço e Bairro *</label>
             <input type="text" id="endereco" placeholder="Rua, Número e Bairro" required oninput="salvarFormulario()">
           </div>
 
           <div class="input-field">
-            <label>Complemento / Ponto de Referência</label>
+            <label for="complemento">Complemento / Ponto de Referência</label>
             <input type="text" id="complemento" placeholder="Ex: Ap 102, Bloco C / Em frente à padaria" oninput="salvarFormulario()">
           </div>
 
           <div class="input-field">
-            <label>Observações do Pedido</label>
+            <label for="obs">Observações do Pedido</label>
             <textarea id="obs" rows="2" placeholder="Sem cebola, tirar maionese, troco para R$ 50..." oninput="salvarFormulario()"></textarea>
           </div>
 
           <div class="input-field">
-            <label>Forma de Pagamento *</label>
+            <label for="pagamento">Forma de Pagamento *</label>
             <select id="pagamento" required onchange="mudarPagamento(); salvarFormulario();">
               <option value="">Selecione como deseja pagar...</option>
               <option value="PIX">PIX (Chave Copia e Cola)</option>
@@ -232,8 +233,8 @@
 
   </main>
 
-  <!-- BARRA FLUTUANTE DE CARRINHO (SÓ APARECE QUANDO HÁ ITENS) -->
-  <div id="floating-cart" class="floating-cart hidden animate-bounce" onclick="irParaCheckout()">
+  <!-- BARRA FLUTUANTE DE CARRINHO (Ajustado onclick para irParaEtapa) -->
+  <div id="floating-cart" class="floating-cart hidden animate-bounce" onclick="irParaEtapa('checkout')">
     <div class="cart-info">
       <span class="cart-icon">🛒</span>
       <span id="cart-count-badge" class="count-badge">0</span>
