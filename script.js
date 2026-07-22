@@ -239,7 +239,7 @@ function reiniciarPedido() {
   irParaEtapa("menu");
 }
 
-// 8. INICIALIZAÇÃO E ENVIO DO FORMULÁRIO
+// 8. INICIALIZAÇÃO E ENVIO DO FORMULÁRIO + INTEGRAÇÃO COM PAINEL KDS
 function processarEnvioPedido(e) {
   e.preventDefault();
 
@@ -249,33 +249,57 @@ function processarEnvioPedido(e) {
   const comp = document.getElementById("complemento")?.value || "-";
   const obs = document.getElementById("obs")?.value || "Nenhuma";
   const pag = document.getElementById("pagamento").value;
-  const total = document.getElementById("total-txt").textContent;
 
+  // Cálculo financeiro preciso
+  let subtotal = 0;
   let listaItens = [];
-  if (carrinho.feijoada > 0) listaItens.push(`${carrinho.feijoada}x Feijoada G`);
-  if (carrinho.bife > 0) listaItens.push(`${carrinho.bife}x Bife Acebolado M`);
-  if (carrinho.xtudo > 0) listaItens.push(`${carrinho.xtudo}x X-Tudo`);
-  if (carrinho.smash > 0) listaItens.push(`${carrinho.smash}x Smash Duplo`);
-  if (carrinho.refri > 0) listaItens.push(`${carrinho.refri}x Refri Lata`);
-  if (carrinho.pudim > 0) listaItens.push(`${carrinho.pudim}x Pudim`);
 
+  if (carrinho.feijoada > 0) { listaItens.push(`${carrinho.feijoada}x Feijoada G`); subtotal += carrinho.feijoada * PRECOS.feijoada; }
+  if (carrinho.bife > 0) { listaItens.push(`${carrinho.bife}x Bife Acebolado M`); subtotal += carrinho.bife * PRECOS.bife; }
+  if (carrinho.xtudo > 0) { listaItens.push(`${carrinho.xtudo}x X-Tudo`); subtotal += carrinho.xtudo * PRECOS.xtudo; }
+  if (carrinho.smash > 0) { listaItens.push(`${carrinho.smash}x Smash Duplo`); subtotal += carrinho.smash * PRECOS.smash; }
+  if (carrinho.refri > 0) { listaItens.push(`${carrinho.refri}x Refri Lata`); subtotal += carrinho.refri * PRECOS.refri; }
+  if (carrinho.pudim > 0) { listaItens.push(`${carrinho.pudim}x Pudim`); subtotal += carrinho.pudim * PRECOS.pudim; }
+
+  const taxa = taxaEntregaCalculada !== null ? taxaEntregaCalculada : 0;
+  const totalNum = subtotal + taxa;
+  const totalFormatado = `R$ ${totalNum.toFixed(2).replace('.', ',')}`;
   const textoItens = listaItens.join(", ");
+  const agora = new Date();
 
-  // Envio pra planilha do Google
+  // --- ENVIA O PEDIDO PARA O PAINEL DE PEDIDOS (KDS) ---
+  const pedidosSalvos = JSON.parse(localStorage.getItem("pedidos_ativos")) || [];
+  const novoPedido = {
+    id: Math.floor(100 + Math.random() * 900), // Número identificador de 3 dígitos
+    hora: agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    cliente: nome,
+    endereco: comp !== "-" ? `${end} (${comp})` : end,
+    taxa: taxa,
+    pagamento: pag,
+    itens: textoItens,
+    obs: obs,
+    total: totalNum,
+    novo: true
+  };
+
+  pedidosSalvos.push(novoPedido);
+  localStorage.setItem("pedidos_ativos", JSON.stringify(pedidosSalvos));
+
+  // Envio para a planilha do Google
   if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
     fetch(SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        data: new Date().toLocaleString("pt-BR"),
+        data: agora.toLocaleString("pt-BR"),
         nome, tel, endereco: `${end} (${comp})`,
-        itens: textoItens, obs, pagamento: pag, total
+        itens: textoItens, obs, pagamento: pag, total: totalFormatado
       })
     });
   }
 
-  // Gera texto no WhatsApp
+  // Gera mensagem formatada no WhatsApp
   const msg = `*NOVO PEDIDO NO SITE!*%0A%0A` +
     `👤 *Cliente:* ${nome}%0A` +
     `📞 *Telefone:* ${tel}%0A` +
@@ -284,7 +308,7 @@ function processarEnvioPedido(e) {
     `🛒 *Itens:* ${textoItens}%0A` +
     `💳 *Pagamento:* ${pag}%0A` +
     `📝 *Obs:* ${obs}%0A` +
-    `💰 *TOTAL:* ${total}`;
+    `💰 *TOTAL:* ${totalFormatado}`;
 
   window.open(`https://wa.me/${SEU_WHATSAPP}?text=${msg}`, '_blank');
   
