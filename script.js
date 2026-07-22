@@ -32,6 +32,26 @@ setInterval(() => {
   mudarSlide(slideAtual);
 }, 4500);
 
+// FUNÇÃO PARA LIDAR COM O CAMPO S/N
+function toggleSemNumero() {
+  const check = document.getElementById("check-sn");
+  const inputNum = document.getElementById("numero");
+
+  // Inverte o estado atual do checkbox se acionado pelo clique na div inteira
+  if (event && event.target !== check) {
+    check.checked = !check.checked;
+  }
+
+  if (check.checked) {
+    inputNum.value = "S/N";
+    inputNum.disabled = true;
+  } else {
+    inputNum.value = "";
+    inputNum.disabled = false;
+  }
+  salvarFormulario();
+}
+
 // COPIAR CHAVE PIX
 function copiarChavePix() {
   navigator.clipboard.writeText(CHAVE_PIX).then(() => {
@@ -195,6 +215,7 @@ function salvarFormulario() {
     cep: document.getElementById("cep").value,
     endereco: document.getElementById("endereco").value,
     numero: document.getElementById("numero").value,
+    snChecked: document.getElementById("check-sn").checked,
     complemento: document.getElementById("complemento").value,
     obs: document.getElementById("obs").value,
     pagamento: document.getElementById("pagamento").value
@@ -223,7 +244,15 @@ function carregarEstadoSalvo() {
     if (dados.telefone) document.getElementById("telefone").value = dados.telefone;
     if (dados.cep) document.getElementById("cep").value = dados.cep;
     if (dados.endereco) document.getElementById("endereco").value = dados.endereco;
-    if (dados.numero) document.getElementById("numero").value = dados.numero;
+    
+    if (dados.snChecked) {
+      document.getElementById("check-sn").checked = true;
+      document.getElementById("numero").value = "S/N";
+      document.getElementById("numero").disabled = true;
+    } else if (dados.numero) {
+      document.getElementById("numero").value = dados.numero;
+    }
+
     if (dados.complemento) document.getElementById("complemento").value = dados.complemento;
     if (dados.obs) document.getElementById("obs").value = dados.obs;
     if (dados.pagamento) {
