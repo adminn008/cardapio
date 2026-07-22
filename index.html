@@ -42,6 +42,20 @@
 
     .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
+    /* CARROSSEL DE INFORMAÇÕES */
+    .carousel-container {
+      position: relative; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 24px; margin-bottom: 22px;
+      overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .carousel-slides { display: flex; transition: transform 0.4s ease-in-out; }
+    .carousel-slide { min-width: 100%; display: flex; flex-direction: column; gap: 4px; }
+    .carousel-slide h3 { font-size: 1.05rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .carousel-slide p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; }
+    .carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background 0.3s; }
+    .dot.active { background: var(--primary); width: 20px; border-radius: 4px; }
+
     .search-box {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 12px 18px; margin-bottom: 20px;
@@ -112,6 +126,13 @@
       border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; transition: all 0.2s;
     }
     .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    .btn-copy {
+      background: var(--surface-hover); border: 1px solid var(--border); color: var(--text);
+      padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer;
+      transition: background 0.2s; margin-top: 6px; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-copy:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
   </style>
 </head>
 <body>
@@ -122,6 +143,29 @@
   </header>
 
   <div class="container">
+
+    <!-- CARROSSEL DE INFORMAÇÕES -->
+    <div class="carousel-container">
+      <div class="carousel-slides" id="carousel-slides">
+        <div class="carousel-slide">
+          <h3>🔥 Destaque da Semana</h3>
+          <p>Experimente a nossa Feijoada Completa G! Acompanha couve refogada, torresmo crocante e arroz fresquinho.</p>
+        </div>
+        <div class="carousel-slide">
+          <h3>🛵 Taxa de Entrega Dinâmica</h3>
+          <p>Calculada automaticamente pelo seu CEP na etapa final do pedido. Rápido, seguro e transparente!</p>
+        </div>
+        <div class="carousel-slide">
+          <h3>⚡ Pagamento Facilitado</h3>
+          <p>Aceitamos Pix com aprovação instantânea, Cartões na entrega e Dinheiro. Chave Pix CNPJ disponível no checkout.</p>
+        </div>
+      </div>
+      <div class="carousel-dots" id="carousel-dots">
+        <span class="dot active" onclick="mudarSlide(0)"></span>
+        <span class="dot" onclick="mudarSlide(1)"></span>
+        <span class="dot" onclick="mudarSlide(2)"></span>
+      </div>
+    </div>
 
     <!-- PASSO 1: MENU -->
     <div id="step-menu">
@@ -229,8 +273,8 @@
         <h2 style="margin-bottom: 20px;">📋 Dados do Pedido & Entrega</h2>
         <form id="form-pedido">
           <div class="form-group">
-            <label>Seu Nome Completo *</label>
-            <input type="text" id="nome" class="form-input" placeholder="Ex: Wellington Silva" required oninput="salvarFormulario()">
+            <label>Seu Nome Completo (Maiúsculas) *</label>
+            <input type="text" id="nome" class="form-input" placeholder="Ex: WELLINGTON SILVA" required oninput="this.value = this.value.toUpperCase(); salvarFormulario();">
           </div>
 
           <div class="form-group">
@@ -244,15 +288,21 @@
               <input type="text" id="cep" class="form-input" placeholder="83000-000" maxlength="9" onkeyup="consultarCEP(); salvarFormulario();">
             </div>
             <div class="form-group">
-              <label>Endereço e Bairro *</label>
-              <input type="text" id="endereco" class="form-input" placeholder="Rua, Número e Bairro" required oninput="salvarFormulario()">
+              <label>Endereço (Rua / Bairro) *</label>
+              <input type="text" id="endereco" class="form-input" placeholder="Rua e Bairro" required oninput="salvarFormulario()">
             </div>
           </div>
           <p id="cep-status" style="font-size: 0.8rem; color: var(--accent); margin-top: -10px; margin-bottom: 15px;"></p>
 
-          <div class="form-group">
-            <label>Complemento / Ponto de Referência</label>
-            <input type="text" id="complemento" class="form-input" placeholder="Apt 102, Bloco B..." oninput="salvarFormulario()">
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
+            <div class="form-group">
+              <label>Número / S/N *</label>
+              <input type="text" id="numero" class="form-input" placeholder="Ex: 142 ou S/N" required oninput="salvarFormulario()">
+            </div>
+            <div class="form-group">
+              <label>Complemento / Referência</label>
+              <input type="text" id="complemento" class="form-input" placeholder="Apt 102, Bloco B..." oninput="salvarFormulario()">
+            </div>
           </div>
 
           <div class="form-group">
@@ -264,8 +314,9 @@
             </select>
           </div>
 
-          <div id="pix-box" class="form-group" style="background: rgba(0, 200, 83, 0.1); padding: 12px; border-radius: 10px; border: 1px dashed var(--accent);">
-            <p style="font-size: 0.85rem; color: var(--accent);">🔑 Chave PIX CNPJ: <strong>00.000.000/0001-00</strong><br>Envie o comprovante pelo WhatsApp ao finalizar!</p>
+          <div id="pix-box" class="form-group" style="background: rgba(0, 200, 83, 0.1); padding: 14px; border-radius: 10px; border: 1px dashed var(--accent);">
+            <p style="font-size: 0.85rem; color: var(--accent); margin-bottom: 6px;">🔑 Chave PIX CNPJ: <strong id="chave-pix-txt">00.000.000/0001-00</strong></p>
+            <button type="button" class="btn-copy" onclick="copiarChavePix()">📋 Copiar Chave PIX</button>
           </div>
 
           <div class="form-group">
