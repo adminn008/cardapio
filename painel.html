@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel de Pedidos - KDS Sabor & Cia</title>
+  <title>Painel KDS - Sabor & Cia</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -13,14 +13,29 @@
     header {
       display: flex; justify-content: space-between; align-items: center;
       background: #202024; padding: 15px 20px; border-radius: 12px;
-      margin-bottom: 20px; border: 1px solid #29292e;
+      margin-bottom: 20px; border: 1px solid #29292e; flex-wrap: wrap; gap: 15px;
     }
     .status-painel h1 { font-size: 1.4rem; color: #00875f; display: flex; align-items: center; gap: 8px; }
-    .status-painel span { font-size: 0.9rem; color: #a8a8b3; font-weight: normal; }
-    .indicadores { display: flex; gap: 20px; text-align: right; }
+    .status-painel span { font-size: 0.85rem; color: #a8a8b3; font-weight: normal; }
+
+    /* NAVEGAÇÃO DE ABAS */
+    .nav-abas { display: flex; gap: 10px; margin-bottom: 20px; }
+    .btn-aba {
+      background: #202024; border: 1px solid #29292e; color: #a8a8b3;
+      padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;
+      font-size: 0.95rem; transition: all 0.2s;
+    }
+    .btn-aba.ativa { background: #00875f; color: #fff; border-color: #00875f; }
+
+    .indicadores { display: flex; gap: 12px; align-items: center; }
     .card-info { background: #121214; padding: 8px 15px; border-radius: 8px; border: 1px solid #29292e; }
     .card-info label { display: block; font-size: 0.75rem; color: #8d8d99; }
-    .card-info strong { font-size: 1.2rem; color: #00b37e; }
+    .card-info strong { font-size: 1.1rem; color: #00b37e; }
+
+    .btn-zerar {
+      background: #da3751; color: #fff; border: none; padding: 8px 12px;
+      border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer;
+    }
 
     /* GRID DIVIDIDA PARA VÁRIOS PEDIDOS */
     .grid-pedidos {
@@ -36,10 +51,10 @@
       justify-content: space-between; position: relative; transition: all 0.3s;
     }
 
-    /* DESTAQUE DE NOVO PEDIDO (30 segundos) */
+    /* DESTAQUE DE NOVO PEDIDO (30s) */
     .card-pedido.novo-pedido {
       border-color: #fba94c;
-      box-shadow: 0 0 15px rgba(251, 169, 76, 0.3);
+      box-shadow: 0 0 15px rgba(251, 169, 76, 0.35);
       animation: pulso 2s infinite;
     }
     @keyframes pulso {
@@ -72,7 +87,7 @@
 
     .financeiro-resumo {
       display: flex; justify-content: space-between; font-size: 0.9rem;
-      color: #a8a8b3; margin-bottom: 15px; border-top: 1px dashed #29292e; pt-2;
+      color: #a8a8b3; margin-bottom: 12px; border-top: 1px dashed #29292e; padding-top: 8px;
     }
     .val-total { color: #00b37e; font-weight: 800; font-size: 1.1rem; }
 
@@ -83,23 +98,16 @@
       cursor: pointer; transition: background 0.2s;
     }
     .btn-concluir:hover { background: #00b37e; }
-    
-    /* Estado do 2º clique */
-    .btn-concluir.confirmar {
-      background: #da3751 !important;
-      animation: balancar 0.3s;
-    }
+    .btn-concluir.confirmar { background: #da3751 !important; }
 
-    @keyframes balancar {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
-      100% { transform: translateX(0); }
+    .tag-concluido {
+      background: #00875f22; color: #00b37e; border: 1px solid #00875f;
+      text-align: center; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;
     }
 
     .vazio-msg {
       grid-column: 1 / -1; text-align: center; color: #8d8d99;
-      padding: 50px; font-size: 1.2rem;
+      padding: 60px 20px; font-size: 1.1rem; background: #202024; border-radius: 12px;
     }
   </style>
 </head>
@@ -107,34 +115,39 @@
 
   <header>
     <div class="status-painel">
-      <h1>📺 Painel KDS <span>(Cozinha / Entrega)</span></h1>
+      <h1>📺 Painel KDS <span>(Cozinha / Gestão)</span></h1>
     </div>
     <div class="indicadores">
       <div class="card-info">
-        <label>Horário Atual</label>
+        <label>Hora Atual</label>
         <strong id="relogio-txt">00:00:00</strong>
       </div>
       <div class="card-info">
-        <label>Total Vendido Hoje</label>
+        <label>Faturamento do Dia</label>
         <strong id="total-dia-txt">R$ 0,00</strong>
       </div>
+      <button class="btn-zerar" onclick="zerarDia()">Zerar Turno</button>
     </div>
   </header>
 
-  <main class="grid-pedidos" id="container-pedidos">
-    <!-- Pedidos entram aqui via JS -->
-  </main>
+  <!-- ABAS DE NAVEGAÇÃO -->
+  <div class="nav-abas">
+    <button class="btn-aba ativa" id="aba-ativos" onclick="mudarAba('ativos')">
+      🛎️ Pedidos Ativos (<span id="qtd-ativos">0</span>)
+    </button>
+    <button class="btn-aba" id="aba-historico" onclick="mudarAba('historico')">
+      📜 Histórico do Dia (<span id="qtd-historico">0</span>)
+    </button>
+  </div>
+
+  <main class="grid-pedidos" id="container-pedidos"></main>
 
   <script>
-    // 1. MANTER A TELA DO CELULAR/TV ACESA
+    // 1. MANTER TELA ACESA (WAKE LOCK)
     async function ativarWakeLock() {
       try {
-        if ('wakeLock' in navigator) {
-          await navigator.wakeLock.request('screen');
-        }
-      } catch (err) {
-        console.log("Wake Lock não ativado:", err.message);
-      }
+        if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
+      } catch (err) {}
     }
     ativarWakeLock();
     document.addEventListener("visibilitychange", () => {
@@ -142,71 +155,74 @@
     });
 
     // 2. RELÓGIO EM TEMPO REAL
-    function atualizarRelogio() {
-      const agora = new Date();
-      document.getElementById('relogio-txt').textContent = agora.toLocaleTimeString('pt-BR');
+    setInterval(() => {
+      document.getElementById('relogio-txt').textContent = new Date().toLocaleTimeString('pt-BR');
+    }, 1000);
+
+    // 3. ESTADO E CARREGAMENTO DOS DADOS (SEM DADOS FALSOS)
+    let abaAtual = 'ativos';
+    let pedidosAtivos = [];
+    let historicoPedidos = [];
+
+    function carregarDados() {
+      pedidosAtivos = JSON.parse(localStorage.getItem('pedidos_ativos')) || [];
+      historicoPedidos = JSON.parse(localStorage.getItem('historico_pedidos')) || [];
+      atualizarContadoresEFaturamento();
     }
-    setInterval(atualizarRelogio, 1000);
-    atualizarRelogio();
 
-    // 3. ESTADO DOS PEDIDOS E TOTAL DO DIA
-    let totalDia = parseFloat(localStorage.getItem('faturamento_dia')) || 0;
-    
-    // Exemplo de lista inicial de pedidos (Pode ser alimentada pelo seu sistema)
-    let pedidosAtivos = [
-      {
-        id: 101,
-        hora: "19:42",
-        cliente: "Wellington Silva",
-        endereco: "Rua das Flores, 123 - Centro",
-        taxa: 5.00,
-        pagamento: "PIX",
-        itens: "1x Feijoada Completa (G), 1x Refri Lata",
-        obs: "Sem cebola na feijoada",
-        total: 32.90,
-        novo: true
-      },
-      {
-        id: 102,
-        hora: "19:48",
-        cliente: "Ana Maria",
-        endereco: "Av. Brasil, 500 - Ap 202",
-        taxa: 7.00,
-        pagamento: "Cartão de Crédito",
-        itens: "2x Smash Duplo Cheddar, 1x Pudim",
-        obs: "Troco para R$ 100 se for dinheiro",
-        total: 53.50,
-        novo: true
-      }
-    ];
+    function salvarDados() {
+      localStorage.setItem('pedidos_ativos', JSON.stringify(pedidosAtivos));
+      localStorage.setItem('historico_pedidos', JSON.stringify(historicoPedidos));
+      atualizarContadoresEFaturamento();
+    }
 
-    function atualizarTotalDia() {
+    function atualizarContadoresEFaturamento() {
+      document.getElementById('qtd-ativos').textContent = pedidosAtivos.length;
+      document.getElementById('qtd-historico').textContent = historicoPedidos.length;
+
+      // Soma o total apenas dos pedidos CONCLUÍDOS no dia
+      const totalVendido = historicoPedidos.reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
       document.getElementById('total-dia-txt').textContent = 
-        totalDia.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      localStorage.setItem('faturamento_dia', totalDia);
+        totalVendido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    // 4. RENDERIZAR OS CARDS NA TELA
-    function renderizarPedidos() {
+    function mudarAba(aba) {
+      abaAtual = aba;
+      document.getElementById('aba-ativos').classList.toggle('ativa', aba === 'ativos');
+      document.getElementById('aba-historico').classList.toggle('ativa', aba === 'historico');
+      renderizar();
+    }
+
+    // 4. RENDERIZAÇÃO NA TELA
+    function renderizar() {
+      carregarDados();
       const container = document.getElementById('container-pedidos');
       container.innerHTML = "";
 
-      if (pedidosAtivos.length === 0) {
-        container.innerHTML = `<div class="vazio-msg">🛎️ Nenhum pedido pendente no momento.</div>`;
+      const listaExibir = abaAtual === 'ativos' ? pedidosAtivos : historicoPedidos;
+
+      if (listaExibir.length === 0) {
+        container.innerHTML = `<div class="vazio-msg">
+          ${abaAtual === 'ativos' ? '🛎️ Nenhum pedido pendente no momento.' : '📜 Nenhum pedido concluído ainda hoje.'}
+        </div>`;
         return;
       }
 
-      pedidosAtivos.forEach((p, index) => {
+      listaExibir.forEach((p, index) => {
         const card = document.createElement('div');
-        card.className = `card-pedido ${p.novo ? 'novo-pedido' : ''}`;
-        
-        // Se clicar no card, remove o destaque de "novo pedido" para ver com calma
+        card.className = `card-pedido ${p.novo && abaAtual === 'ativos' ? 'novo-pedido' : ''}`;
+
+        // Remove o brilho de "novo pedido" ao clicar nele
         card.onclick = (e) => {
           if (!e.target.classList.contains('btn-concluir')) {
             p.novo = false;
             card.classList.remove('novo-pedido');
+            salvarDados();
           }
         };
+
+        const taxaVal = parseFloat(p.taxa) || 0;
+        const totalVal = parseFloat(p.total) || 0;
 
         card.innerHTML = `
           <div>
@@ -218,57 +234,62 @@
             <div class="cliente-info">
               <div class="cliente-nome">${p.cliente}</div>
               <div class="cliente-end">📍 ${p.endereco}</div>
-              <div class="cliente-detalhes">💳 ${p.pagamento} | Taxa: R$ ${p.taxa.toFixed(2)}</div>
+              <div class="cliente-detalhes">💳 ${p.pagamento} | Taxa: R$ ${taxaVal.toFixed(2).replace('.', ',')}</div>
             </div>
 
             <div class="itens-lista">
               <strong>Itens:</strong><br>${p.itens}
             </div>
 
-            ${p.obs ? `<div class="obs-box">📝 <strong>Obs:</strong> ${p.obs}</div>` : ''}
+            ${p.obs && p.obs !== 'Nenhuma' ? `<div class="obs-box">📝 <strong>Obs:</strong> ${p.obs}</div>` : ''}
           </div>
 
           <div>
             <div class="financeiro-resumo">
-              <span>Total a Receber:</span>
-              <span class="val-total">R$ ${p.total.toFixed(2)}</span>
+              <span>Total do Pedido:</span>
+              <span class="val-total">R$ ${totalVal.toFixed(2).replace('.', ',')}</span>
             </div>
 
-            <button class="btn-concluir" onclick="tentarConcluir(this, ${index})">
-              ✅ Concluir Pedido
-            </button>
+            ${abaAtual === 'ativos' ? `
+              <button class="btn-concluir" onclick="concluirPedido(this, ${index})">
+                ✅ Concluir Pedido
+              </button>
+            ` : `
+              <div class="tag-concluido">
+                ✔️ Entregue às ${p.horaConclusao || 'Horário registrado'}
+              </div>
+            `}
           </div>
         `;
 
         container.appendChild(card);
 
-        // Remove o efeito piscando sozinho após 30 segundos se ninguém mexer
-        if (p.novo) {
+        // Desliga o efeito piscante sozinho após 30 segundos
+        if (p.novo && abaAtual === 'ativos') {
           setTimeout(() => {
             p.novo = false;
             card.classList.remove('novo-pedido');
+            salvarDados();
           }, 30000);
         }
       });
     }
 
-    // 5. LÓGICA DE CONFIRMAÇÃO DUPLA NO BOTÃO
-    function tentarConcluir(btn, index) {
-      // Se já foi clicado uma vez, agora confirma e remove
+    // 5. CONFIRMAÇÃO DUPLA E ENVIO PARA O HISTÓRICO
+    function concluirPedido(btn, index) {
       if (btn.classList.contains('confirmar')) {
-        const pedido = pedidosAtivos[index];
-        totalDia += pedido.total;
-        atualizarTotalDia();
+        // Move o pedido da lista de Ativos -> Histórico
+        const pedidoConcluido = pedidosAtivos.splice(index, 1)[0];
+        pedidoConcluido.horaConclusao = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        pedidoConcluido.novo = false;
 
-        // Remove o pedido da lista
-        pedidosAtivos.splice(index, 1);
-        renderizarPedidos();
+        historicoPedidos.unshift(pedidoConcluido); // Adiciona no topo do histórico
+        salvarDados();
+        renderizar();
       } else {
-        // Primeiro clique: muda de cor e texto pra pedir confirmação
         btn.classList.add('confirmar');
         btn.innerHTML = "⚠️ Clique de novo p/ Confirmar";
 
-        // Se passar 4 segundos sem clicar de novo, cancela a confirmação
         setTimeout(() => {
           if (btn) {
             btn.classList.remove('confirmar');
@@ -278,10 +299,28 @@
       }
     }
 
-    // Inicializa tela
-    atualizarTotalDia();
-    renderizarPedidos();
+    // 6. ZERAR O DIA (NOVO TURNO)
+    function zerarDia() {
+      if (confirm("Deseja mesmo zerar o faturamento e o histórico do dia para iniciar um novo turno?")) {
+        localStorage.removeItem('historico_pedidos');
+        historicoPedidos = [];
+        salvarDados();
+        renderizar();
+      }
+    }
+
+    // 7. SINCRONIZAÇÃO EM TEMPO REAL ENTRE ABAS/DISPOSITIVOS
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pedidos_ativos' || e.key === 'historico_pedidos') {
+        renderizar();
+      }
+    });
+
+    // Verifica novos pedidos a cada 2 segundos automaticamente
+    setInterval(renderizar, 2000);
+
+    // Inicialização
+    renderizar();
   </script>
 </body>
 </html>
-
