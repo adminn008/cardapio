@@ -223,31 +223,66 @@ function reiniciarPedido() {
   irParaEtapa("menu");
 }
 
-// 8. ENVIO PARA WHATSAPP E REGISTRO NA PLANILHA
+// 8. ENVIO PARA WHATSAPP COM FORMATO BONITO E DETALHADO
 function processarEnvioPedido(e) {
   e.preventDefault();
 
-  const nome = document.getElementById("nome").value;
-  const tel = document.getElementById("telefone").value;
-  const end = document.getElementById("endereco").value;
-  const comp = document.getElementById("complemento")?.value || "-";
-  const obs = document.getElementById("obs")?.value || "Nenhuma";
+  const nome = document.getElementById("nome").value.trim();
+  const tel = document.getElementById("telefone").value.trim();
+  const end = document.getElementById("endereco").value.trim();
+  const comp = document.getElementById("complemento")?.value.trim() || "Nenhum";
+  const obs = document.getElementById("obs")?.value.trim() || "Nenhuma";
   const pag = document.getElementById("pagamento").value;
 
+  if (!nome || !tel || !end) {
+    alert("Por favor, preencha seu Nome, Telefone e Endereço antes de enviar!");
+    return;
+  }
+
   let subtotal = 0;
-  let listaItens = [];
+  let listaItensDescritiva = [];
 
-  if (carrinho.feijoada > 0) { listaItens.push(`${carrinho.feijoada}x Feijoada G`); subtotal += carrinho.feijoada * PRECOS.feijoada; }
-  if (carrinho.bife > 0) { listaItens.push(`${carrinho.bife}x Bife Acebolado M`); subtotal += carrinho.bife * PRECOS.bife; }
-  if (carrinho.xtudo > 0) { listaItens.push(`${carrinho.xtudo}x X-Tudo`); subtotal += carrinho.xtudo * PRECOS.xtudo; }
-  if (carrinho.smash > 0) { listaItens.push(`${carrinho.smash}x Smash Duplo`); subtotal += carrinho.smash * PRECOS.smash; }
-  if (carrinho.refri > 0) { listaItens.push(`${carrinho.refri}x Refri Lata`); subtotal += carrinho.refri * PRECOS.refri; }
-  if (carrinho.pudim > 0) { listaItens.push(`${carrinho.pudim}x Pudim`); subtotal += carrinho.pudim * PRECOS.pudim; }
+  if (carrinho.feijoada > 0) {
+    let val = carrinho.feijoada * PRECOS.feijoada;
+    listaItensDescritiva.push(`${carrinho.feijoada}x Feijoada Completa G (R$ ${val.toFixed(2).replace('.', ',')})`);
+    subtotal += val;
+  }
+  if (carrinho.bife > 0) {
+    let val = carrinho.bife * PRECOS.bife;
+    listaItensDescritiva.push(`${carrinho.bife}x Bife Acebolado M (R$ ${val.toFixed(2).replace('.', ',')})`);
+    subtotal += val;
+  }
+  if (carrinho.xtudo > 0) {
+    let val = carrinho.xtudo * PRECOS.xtudo;
+    listaItensDescritiva.push(`${carrinho.xtudo}x X-Tudo Artesanal (R$ ${val.toFixed(2).replace('.', ',')})`);
+    subtotal += val;
+  }
+  if (carrinho.smash > 0) {
+    let val = carrinho.smash * PRECOS.smash;
+    listaItensDescritiva.push(`${carrinho.smash}x Smash Duplo Cheese (R$ ${val.toFixed(2).replace('.', ',')})`);
+    subtotal += val;
+  }
+  if (carrinho.refri > 0) {
+    let val = carrinho.refri * PRECOS.refri;
+    listaItensDescritiva.push(`${carrinho.refri}x Refri Lata 350ml (R$ ${val.toFixed(2).replace('.', ',')})`);
+    subtotal += val;
+  }
+  if (carrinho.pudim > 0) {
+    let val = carrinho.pudim * PRECOS.pudim;
+    listaItensDescritiva.push(`${carrinho.pudim}x Pudim de Leite Moça (R$ ${val.toFixed(2).replace('.', ',')})`);
+    subtotal += val;
+  }
 
-  const taxa = taxaEntregaCalculada !== null ? taxaEntregaCalculada : 0;
-  const totalNum = subtotal + taxa;
+  const taxaFinal = taxaEntregaCalculada !== null ? taxaEntregaCalculada : 0;
+  const taxaFormatada = taxaEntregaCalculada !== null ? `R$ ${taxaFinal.toFixed(2).replace('.', ',')}` : "A calcular / Retirada";
+  const totalNum = subtotal + taxaFinal;
   const totalFormatado = `R$ ${totalNum.toFixed(2).replace('.', ',')}`;
-  const textoItens = listaItens.join(", ");
+
+  let itensTexto = "";
+  listaItensDescritiva.forEach(item => {
+    itensTexto += `▪️ ${item}\n`;
+  });
+
   const agora = new Date();
 
   // ENVIO SILENCIOSO PARA A PLANILHA (BACKGROUND)
@@ -259,26 +294,28 @@ function processarEnvioPedido(e) {
       body: JSON.stringify({
         data: agora.toLocaleString("pt-BR"),
         nome, tel, endereco: `${end} (${comp})`,
-        itens: textoItens, obs, pagamento: pag, total: totalFormatado
+        itens: listaItensDescritiva.join(", "), obs, pagamento: pag, total: totalFormatado
       })
     }).catch(() => {});
   }
 
-  // MENSAGEM WHATSAPP
-  const msg = `*NOVO PEDIDO - SABOR & CIA*%0A%0A` +
-    `👤 *Cliente:* ${nome}%0A` +
-    `📞 *Telefone:* ${tel}%0A` +
-    `📍 *Endereço:* ${end}%0A` +
-    `🏠 *Comp:* ${comp}%0A` +
-    `🛒 *Itens:* ${textoItens}%0A` +
-    `💳 *Pagamento:* ${pag}%0A` +
-    `📝 *Obs:* ${obs}%0A` +
-    `💰 *TOTAL:* ${totalFormatado}`;
+  // MENSAGEM WHATSAPP BEM BONITA E ESTRUTURADA
+  const msg = `🍔 *NOVO PEDIDO - SABOR & CIA* 🍟\n\n` +
+    `👤 *Cliente:* ${nome}\n` +
+    `📞 *Telefone:* ${tel}\n` +
+    `📍 *Endereço:* ${end}\n` +
+    `🏠 *Complemento:* ${comp}\n\n` +
+    `🛒 *ITENS DO PEDIDO:*\n` +
+    itensTexto + `\n` +
+    `📦 *Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n` +
+    `🛵 *Taxa de Entrega:* ${taxaFormatada}\n` +
+    `💰 *TOTAL GERAL:* *${totalFormatado}*\n\n` +
+    `💳 *Forma de Pagamento:* ${pag}\n` +
+    `📝 *Observações:* ${obs}\n\n` +
+    `_Pedido gerado via cardápio online_`;
 
-  window.open(`https://wa.me/${SEU_WHATSAPP}?text=${msg}`, '_blank');
-  
-  // Exibe Modal de Acompanhamento
-  document.getElementById("modal-status").classList.remove("hidden");
+  const url = `https://wa.me/${SEU_WHATSAPP}?text=` + encodeURIComponent(msg);
+  window.open(url, '_blank');
 }
 
 function inicializar() {
