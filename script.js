@@ -1,6 +1,7 @@
 // CONFIGURAÇÕES DO SISTEMA
 const SCRIPT_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI"; // Opcional
 const SEU_WHATSAPP = "5541999999999"; // Substitua pelo seu WhatsApp comercial com DDD
+const CHAVE_PIX = "00.000.000/0001-00";
 
 const PRECOS = {
   feijoada: 26.90,
@@ -13,8 +14,34 @@ const PRECOS = {
 
 let carrinho = { feijoada: 0, bife: 0, xtudo: 0, smash: 0, refri: 0, pudim: 0 };
 let taxaEntregaCalculada = null;
+let slideAtual = 0;
 
-// 1. MÁSCARA AUTOMÁTICA DE TELEFONE
+// CARROSSEL AUTOMÁTICO
+function mudarSlide(index) {
+  const slides = document.getElementById("carousel-slides");
+  const dots = document.querySelectorAll(".dot");
+  slideAtual = index;
+  slides.style.transform = `translateX(-${slideAtual * 100}%)`;
+  dots.forEach((dot, i) => {
+    dot.classList.toggle("active", i === slideAtual);
+  });
+}
+
+setInterval(() => {
+  slideAtual = (slideAtual + 1) % 3;
+  mudarSlide(slideAtual);
+}, 4500);
+
+// COPIAR CHAVE PIX
+function copiarChavePix() {
+  navigator.clipboard.writeText(CHAVE_PIX).then(() => {
+    alert("Chave Pix copiada com sucesso!");
+  }).catch(() => {
+    alert("Erro ao copiar chave.");
+  });
+}
+
+// MÁSCARA AUTOMÁTICA DE TELEFONE
 function mascaraTelefone(input) {
   let v = input.value.replace(/\D/g, "");
   if (v.length > 11) v = v.slice(0, 11);
@@ -31,7 +58,7 @@ function mascaraTelefone(input) {
   input.value = v;
 }
 
-// 2. NAVEGAÇÃO DE ETAPAS
+// NAVEGAÇÃO DE ETAPAS
 function irParaEtapa(etapa) {
   document.getElementById("step-menu").classList.add("hidden");
   document.getElementById("step-checkout").classList.add("hidden");
@@ -50,7 +77,7 @@ function irParaEtapa(etapa) {
   }
 }
 
-// 3. ALTERAR QUANTIDADE E ATUALIZAR RESUMO
+// ALTERAR QUANTIDADE E ATUALIZAR RESUMO
 function alterarQtd(item, valor) {
   if (carrinho[item] + valor >= 0) {
     carrinho[item] += valor;
@@ -96,7 +123,7 @@ function atualizarResumo() {
   }
 }
 
-// 4. CÁLCULO DINÂMICO VIA CEP
+// CÁLCULO DINÂMICO VIA CEP
 async function consultarCEP() {
   const cepInput = document.getElementById("cep").value.replace(/\D/g, "");
   const statusTxt = document.getElementById("cep-status");
@@ -125,7 +152,7 @@ async function consultarCEP() {
   }
 }
 
-// 5. FILTRAGEM DE CATEGORIA E BUSCA
+// FILTRAGEM
 function filtrarCategoria(cat, elemento) {
   document.querySelectorAll(".cat-btn").forEach(btn => btn.classList.remove("active"));
   if (elemento) elemento.classList.add("active");
@@ -155,7 +182,7 @@ function mudarPagamento() {
   document.getElementById("pix-box").classList.toggle("hidden", val !== "PIX");
 }
 
-// 6. PERSISTÊNCIA EM LOCALSTORAGE
+// PERSISTÊNCIA
 function salvarEstado() {
   localStorage.setItem("carrinho_sabor_cia", JSON.stringify(carrinho));
   localStorage.setItem("taxa_sabor_cia", JSON.stringify(taxaEntregaCalculada));
@@ -167,6 +194,7 @@ function salvarFormulario() {
     telefone: document.getElementById("telefone").value,
     cep: document.getElementById("cep").value,
     endereco: document.getElementById("endereco").value,
+    numero: document.getElementById("numero").value,
     complemento: document.getElementById("complemento").value,
     obs: document.getElementById("obs").value,
     pagamento: document.getElementById("pagamento").value
@@ -195,6 +223,7 @@ function carregarEstadoSalvo() {
     if (dados.telefone) document.getElementById("telefone").value = dados.telefone;
     if (dados.cep) document.getElementById("cep").value = dados.cep;
     if (dados.endereco) document.getElementById("endereco").value = dados.endereco;
+    if (dados.numero) document.getElementById("numero").value = dados.numero;
     if (dados.complemento) document.getElementById("complemento").value = dados.complemento;
     if (dados.obs) document.getElementById("obs").value = dados.obs;
     if (dados.pagamento) {
@@ -206,36 +235,20 @@ function carregarEstadoSalvo() {
   atualizarResumo();
 }
 
-// 7. ZERAR PEDIDO
-function reiniciarPedido() {
-  localStorage.removeItem("carrinho_sabor_cia");
-  localStorage.removeItem("taxa_sabor_cia");
-
-  carrinho = { feijoada: 0, bife: 0, xtudo: 0, smash: 0, refri: 0, pudim: 0 };
-  taxaEntregaCalculada = null;
-
-  for (let item in carrinho) {
-    const el = document.getElementById(`qty-${item}`);
-    if (el) el.textContent = "0";
-  }
-
-  atualizarResumo();
-  irParaEtapa("menu");
-}
-
-// 8. ENVIO PARA WHATSAPP COM FORMATO BONITO E DETALHADO
+// ENVIO PARA WHATSAPP
 function processarEnvioPedido(e) {
   e.preventDefault();
 
   const nome = document.getElementById("nome").value.trim();
   const tel = document.getElementById("telefone").value.trim();
   const end = document.getElementById("endereco").value.trim();
+  const num = document.getElementById("numero").value.trim();
   const comp = document.getElementById("complemento")?.value.trim() || "Nenhum";
   const obs = document.getElementById("obs")?.value.trim() || "Nenhuma";
   const pag = document.getElementById("pagamento").value;
 
-  if (!nome || !tel || !end) {
-    alert("Por favor, preencha seu Nome, Telefone e Endereço antes de enviar!");
+  if (!nome || !tel || !end || !num) {
+    alert("Por favor, preencha seu Nome, Telefone, Endereço e Número/S/N antes de enviar!");
     return;
   }
 
@@ -285,7 +298,6 @@ function processarEnvioPedido(e) {
 
   const agora = new Date();
 
-  // ENVIO SILENCIOSO PARA A PLANILHA (BACKGROUND)
   if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
     fetch(SCRIPT_URL, {
       method: "POST",
@@ -293,17 +305,16 @@ function processarEnvioPedido(e) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         data: agora.toLocaleString("pt-BR"),
-        nome, tel, endereco: `${end} (${comp})`,
+        nome, tel, endereco: `${end}, Nº ${num} (${comp})`,
         itens: listaItensDescritiva.join(", "), obs, pagamento: pag, total: totalFormatado
       })
     }).catch(() => {});
   }
 
-  // MENSAGEM WHATSAPP BEM BONITA E ESTRUTURADA
   const msg = `🍔 *NOVO PEDIDO - SABOR & CIA* 🍟\n\n` +
     `👤 *Cliente:* ${nome}\n` +
     `📞 *Telefone:* ${tel}\n` +
-    `📍 *Endereço:* ${end}\n` +
+    `📍 *Endereço:* ${end}, *Nº ${num}*\n` +
     `🏠 *Complemento:* ${comp}\n\n` +
     `🛒 *ITENS DO PEDIDO:*\n` +
     itensTexto + `\n` +
