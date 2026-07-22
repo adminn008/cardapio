@@ -3,92 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel KDS - Sabor & Cia</title>
+  <title>Painel KDS - Cozinha</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: #121214; color: #e1e1e6; padding: 15px; min-height: 100vh; }
 
-    /* TOPO DO PAINEL */
     header {
       display: flex; justify-content: space-between; align-items: center;
       background: #202024; padding: 15px 20px; border-radius: 12px;
       margin-bottom: 20px; border: 1px solid #29292e; flex-wrap: wrap; gap: 15px;
     }
-    .status-painel h1 { font-size: 1.4rem; color: #00875f; display: flex; align-items: center; gap: 8px; }
-    .status-painel span { font-size: 0.85rem; color: #a8a8b3; font-weight: normal; }
-
-    .indicadores { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .status-painel h1 { font-size: 1.4rem; color: #00875f; }
+    .indicadores { display: flex; gap: 12px; align-items: center; }
     .card-info { background: #121214; padding: 8px 15px; border-radius: 8px; border: 1px solid #29292e; }
     .card-info label { display: block; font-size: 0.75rem; color: #8d8d99; }
     .card-info strong { font-size: 1.1rem; color: #00b37e; }
 
-    .btn-acao {
-      border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; color: #fff;
+    .btn-som {
+      border: none; padding: 10px 15px; border-radius: 6px; font-weight: 700;
+      font-size: 0.85rem; cursor: pointer; color: #fff; background: #9b51e0;
     }
-    .btn-som { background: #9b51e0; }
     .btn-som.ativo { background: #00875f; }
 
-    /* GRID DE PEDIDOS */
     .grid-pedidos {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 15px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px;
     }
 
-    /* CARD DO PEDIDO */
     .card-pedido {
       background: #202024; border-radius: 12px; padding: 15px;
-      border: 2px solid #29292e; display: flex; flex-direction: column;
-      justify-content: space-between; position: relative; transition: all 0.3s;
+      border: 2px solid #29292e; display: flex; flex-direction: column; justify-content: space-between;
     }
-
     .pedido-header {
       display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid #29292e; padding-bottom: 10px; margin-bottom: 10px;
     }
     .num-pedido { font-size: 1.2rem; font-weight: 800; color: #fba94c; }
     .hora-pedido { font-size: 0.85rem; color: #8d8d99; background: #121214; padding: 4px 8px; border-radius: 4px; }
-
-    .cliente-info { margin-bottom: 10px; line-height: 1.4; }
+    
     .cliente-nome { font-size: 1.1rem; font-weight: 700; color: #fff; }
-    .cliente-end { font-size: 0.9rem; color: #c4c4cc; }
-    .cliente-detalhes { font-size: 0.85rem; color: #8d8d99; margin-top: 4px; }
-
+    .cliente-end { font-size: 0.9rem; color: #c4c4cc; margin-bottom: 8px; }
+    
     .itens-lista {
       background: #121214; padding: 10px; border-radius: 8px;
       margin: 10px 0; font-size: 0.95rem; color: #e1e1e6; line-height: 1.5;
     }
 
-    .obs-box {
-      background: #29292e; padding: 8px; border-radius: 6px;
-      font-size: 0.85rem; color: #fba94c; margin-bottom: 10px;
-    }
-
     .financeiro-resumo {
       display: flex; justify-content: space-between; font-size: 0.9rem;
-      color: #a8a8b3; margin-bottom: 12px; border-top: 1px dashed #29292e; padding-top: 8px;
+      color: #a8a8b3; margin: 10px 0; border-top: 1px dashed #29292e; padding-top: 8px;
     }
     .val-total { color: #00b37e; font-weight: 800; font-size: 1.1rem; }
 
-    /* BOTÕES DE AÇÃO */
     .acoes-card { display: flex; gap: 8px; }
-    
-    .btn-concluir {
-      flex: 2; padding: 12px; border: none; border-radius: 8px;
-      background: #00875f; color: #fff; font-weight: 700; font-size: 0.9rem;
-      cursor: pointer; transition: background 0.2s;
+    .btn-acao {
+      flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: #fff;
     }
-    .btn-concluir:hover { background: #00b37e; }
-    .btn-concluir.confirmar { background: #e16e0e !important; }
-
-    .btn-cancelar {
-      flex: 1; padding: 12px; border: none; border-radius: 8px;
-      background: #29292e; color: #f75a68; font-weight: 700; font-size: 0.85rem;
-      cursor: pointer; transition: all 0.2s; border: 1px solid #da3751;
-    }
-    .btn-cancelar:hover { background: #da3751; color: #fff; }
-    .btn-cancelar.confirmar { background: #da3751 !important; color: #fff !important; }
+    .btn-concluir { background: #00875f; }
+    .btn-cancelar { background: #29292e; color: #f75a68; border: 1px solid #da3751; }
 
     .vazio-msg {
       grid-column: 1 / -1; text-align: center; color: #8d8d99;
@@ -100,214 +72,112 @@
 
   <header>
     <div class="status-painel">
-      <h1>📺 Painel KDS <span>(Cozinha Em Tempo Real)</span></h1>
+      <h1>📺 Cozinha KDS (Local)</h1>
     </div>
     <div class="indicadores">
-      <button class="btn-acao btn-som" id="btn-ativar-som" onclick="ativarSomAlertas()">🔇 Clique p/ Ativar Som</button>
-      <div class="card-info">
-        <label>Hora Atual</label>
-        <strong id="relogio-txt">00:00:00</strong>
-      </div>
+      <button class="btn-som" id="btn-som" onclick="ativarSom()">🔇 Ativar Alerta Sonoro</button>
       <div class="card-info">
         <label>Total do Turno</label>
-        <strong id="total-dia-txt">R$ 0,00</strong>
+        <strong id="total-turno">R$ 0,00</strong>
       </div>
     </div>
   </header>
 
-  <main class="grid-pedidos" id="container-pedidos">
-    <div class="vazio-msg">🔄 Conectando com a planilha...</div>
-  </main>
+  <main class="grid-pedidos" id="container-pedidos"></main>
 
   <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbzfzTnNpgAZcICqpbGwy8i7XbDG8Tea75L-r-aou7DpaeaEdmarv5oN9xf95imY9Fft/exec";
-
-    let somHabilitado = false;
+    const canalPedidos = new BroadcastChannel('canal_kds');
+    let somAtivo = false;
     let audioCtx = null;
-    let pedidosAtivos = [];
-    let ultimosIdsAtivos = [];
 
-    // 1. SOM DE ALERTA SINTETIZADO
-    function ativarSomAlertas() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      somHabilitado = true;
-      const btn = document.getElementById('btn-ativar-som');
-      btn.className = "btn-acao btn-som ativo";
-      btn.innerHTML = "🔊 Som de Alerta Ativo";
-      tocarSomPedido();
+    function ativarSom() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      somAtivo = true;
+      const btn = document.getElementById('btn-som');
+      btn.className = "btn-som ativo";
+      btn.innerHTML = "🔊 Som Ativado";
     }
 
-    function tocarSomPedido() {
-      if (!somHabilitado || !audioCtx) return;
-
-      try {
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime);
-        gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-        osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.start();
-        osc1.stop(audioCtx.currentTime + 0.6);
-
-        setTimeout(() => {
-          const osc2 = audioCtx.createOscillator();
-          const gain2 = audioCtx.createGain();
-          osc2.type = 'sine';
-          osc2.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-          gain2.gain.setValueAtTime(0.4, audioCtx.currentTime);
-          gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.9);
-          osc2.connect(gain2);
-          gain2.connect(audioCtx.destination);
-          osc2.start();
-          osc2.stop(audioCtx.currentTime + 0.9);
-        }, 150);
-      } catch (err) {}
+    function tocarAlerta() {
+      if (!somAtivo || !audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
     }
 
-    // 2. MANTER TELA ACESA
-    async function ativarWakeLock() {
-      try {
-        if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
-      } catch (err) {}
-    }
-    ativarWakeLock();
-
-    // 3. RELÓGIO
-    setInterval(() => {
-      document.getElementById('relogio-txt').textContent = new Date().toLocaleTimeString('pt-BR');
-    }, 1000);
-
-    // 4. BUSCAR DADOS DA PLANILHA
     function carregarDados() {
-      fetch(URL_API)
-        .then(res => res.json())
-        .then(dados => {
-          if (!Array.isArray(dados)) return;
-
-          // TOTAL DO TURNO: Soma de todos os pedidos que NÃO foram cancelados
-          const totalTurno = dados
-            .filter(p => p.status !== 'cancelado')
-            .reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
-
-          document.getElementById('total-dia-txt').textContent = 
-            totalTurno.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-          // Filtrar apenas pedidos com status "ativo" para exibir na cozinha
-          const novosAtivos = dados.filter(p => p.status === 'ativo');
-
-          // Alerta sonoro quando entra pedido novo
-          if (ultimosIdsAtivos.length > 0) {
-            const temNovo = novosAtivos.some(p => !ultimosIdsAtivos.includes(String(p.id)));
-            if (temNovo) tocarSomPedido();
-          }
-
-          pedidosAtivos = novosAtivos;
-          ultimosIdsAtivos = pedidosAtivos.map(p => String(p.id));
-
-          renderizar();
-        })
-        .catch(err => console.error("Erro ao buscar pedidos:", err));
-    }
-
-    // 5. RENDERIZAR CARDS DOS PEDIDOS
-    function renderizar() {
+      const todosPedidos = JSON.parse(localStorage.getItem('pedidos_kds')) || [];
       const container = document.getElementById('container-pedidos');
-      container.innerHTML = "";
+      
+      // Total de vendas
+      const total = todosPedidos
+        .filter(p => p.status !== 'cancelado')
+        .reduce((acc, p) => acc + (p.total || 0), 0);
+      
+      document.getElementById('total-turno').textContent = 
+        total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-      if (pedidosAtivos.length === 0) {
+      // Filtra apenas os ativos para exibir
+      const ativos = todosPedidos.filter(p => p.status === 'ativo');
+
+      if (ativos.length === 0) {
         container.innerHTML = `<div class="vazio-msg">🛎️ Nenhum pedido pendente no momento.</div>`;
         return;
       }
 
-      pedidosAtivos.forEach((p) => {
+      container.innerHTML = "";
+      ativos.forEach(p => {
         const card = document.createElement('div');
         card.className = 'card-pedido';
-
-        const taxaVal = parseFloat(p.taxa) || 0;
-        const totalVal = parseFloat(p.total) || 0;
-
         card.innerHTML = `
           <div>
             <div class="pedido-header">
               <span class="num-pedido">#${p.id}</span>
               <span class="hora-pedido">🕒 ${p.hora}</span>
             </div>
-
-            <div class="cliente-info">
-              <div class="cliente-nome">${p.cliente}</div>
-              <div class="cliente-end">📍 ${p.endereco}</div>
-              <div class="cliente-detalhes">💳 ${p.pagamento} | Taxa: R$ ${taxaVal.toFixed(2).replace('.', ',')}</div>
-            </div>
-
-            <div class="itens-lista">
-              <strong>Itens:</strong><br>${p.itens}
-            </div>
-
-            ${p.obs && p.obs !== 'Nenhuma' ? `<div class="obs-box">📝 <strong>Obs:</strong> ${p.obs}</div>` : ''}
+            <div class="cliente-nome">${p.cliente}</div>
+            <div class="cliente-end">📍 ${p.endereco}</div>
+            <div class="itens-lista"><strong>Itens:</strong><br>${p.itens}</div>
+            ${p.obs !== 'Nenhuma' ? `<div style="color:#fba94c; font-size:0.85rem;">📝 ${p.obs}</div>` : ''}
           </div>
-
           <div>
             <div class="financeiro-resumo">
-              <span>Total do Pedido:</span>
-              <span class="val-total">R$ ${totalVal.toFixed(2).replace('.', ',')}</span>
+              <span>Total:</span>
+              <span class="val-total">R$ ${(p.total || 0).toFixed(2).replace('.', ',')}</span>
             </div>
-
             <div class="acoes-card">
-              <button class="btn-concluir" onclick="atualizarStatusPedido('${p.id}', 'entregue', this)">
-                ✅ Concluir
-              </button>
-              <button class="btn-cancelar" onclick="atualizarStatusPedido('${p.id}', 'cancelado', this)">
-                ❌ Cancelar
-              </button>
+              <button class="btn-acao btn-concluir" onclick="mudarStatus(${p.id}, 'entregue')">✅ Concluir</button>
+              <button class="btn-acao btn-cancelar" onclick="mudarStatus(${p.id}, 'cancelado')">❌ Cancelar</button>
             </div>
           </div>
         `;
-
         container.appendChild(card);
       });
     }
 
-    // 6. ATUALIZAR STATUS NO GOOGLE SHEETS
-    function atualizarStatusPedido(idPedido, novoStatus, btn) {
-      if (btn.classList.contains('confirmar')) {
-        btn.disabled = true;
-        btn.innerHTML = "Aguarde...";
-
-        fetch(URL_API, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "atualizar_status",
-            id: idPedido,
-            status: novoStatus
-          })
-        }).then(() => {
-          setTimeout(carregarDados, 800);
-        });
-      } else {
-        btn.classList.add('confirmar');
-        btn.innerHTML = novoStatus === 'entregue' ? "⚠️ Confirmar?" : "⚠️ Cancelar?";
-
-        setTimeout(() => {
-          if (btn) {
-            btn.classList.remove('confirmar');
-            btn.innerHTML = novoStatus === 'entregue' ? "✅ Concluir" : "❌ Cancelar";
-          }
-        }, 4000);
-      }
+    function mudarStatus(id, novoStatus) {
+      let todosPedidos = JSON.parse(localStorage.getItem('pedidos_kds')) || [];
+      todosPedidos = todosPedidos.map(p => {
+        if (p.id === id) p.status = novoStatus;
+        return p;
+      });
+      localStorage.setItem('pedidos_kds', JSON.stringify(todosPedidos));
+      carregarDados();
     }
 
-    // Atualização em tempo real (busca na nuvem a cada 3 segundos)
-    setInterval(carregarDados, 3000);
+    // Escuta novas mensagens vindas do cardápio em tempo real
+    canalPedidos.onmessage = (e) => {
+      if (e.data.acao === 'novo_pedido') {
+        tocarAlerta();
+        carregarDados();
+      }
+    };
+
     carregarDados();
   </script>
 </body>
