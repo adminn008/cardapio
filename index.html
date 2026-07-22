@@ -3,244 +3,357 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sabor & Cia - Delivery Gourmet</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Sabor & Cia | Delivery</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #FF385C;
+      --primary-hover: #E00B41;
+      --bg: #0F0F12;
+      --surface: #18181C;
+      --surface-hover: #222228;
+      --border: #2E2E38;
+      --text: #F3F3F5;
+      --text-muted: #8E8E9A;
+      --accent: #00C853;
+      --warning: #FFB300;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 100px; min-height: 100vh; overflow-x: hidden; }
+
+    /* Header e Banner */
+    header {
+      background: linear-gradient(180deg, rgba(255, 56, 92, 0.15) 0%, rgba(15, 15, 18, 0) 100%);
+      padding: 24px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand h1 { font-size: 1.6rem; font-weight: 800; color: var(--text); }
+    .brand span { color: var(--primary); }
+    .status-badge {
+      background: rgba(0, 200, 83, 0.15); color: var(--accent);
+      padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.8rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .status-badge::before {
+      content: ''; width: 8px; height: 8px; background: var(--accent);
+      border-radius: 50%; box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* Container Principal */
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+    /* Busca e Categorias */
+    .search-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 18px; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px; transition: all 0.3s;
+    }
+    .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.2); }
+    .search-box input {
+      background: transparent; border: none; outline: none; color: var(--text);
+      width: 100%; font-size: 0.95rem;
+    }
+
+    .categories { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 25px; scrollbar-width: none; }
+    .cat-btn {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+      padding: 10px 18px; border-radius: 30px; font-weight: 600; font-size: 0.85rem;
+      cursor: pointer; white-space: nowrap; transition: all 0.2s;
+    }
+    .cat-btn.active, .cat-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateY(-2px); }
+
+    /* Grid de Cardápio */
+    .grid-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+    .food-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px; display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .food-card:hover { transform: translateY(-4px); border-color: #3e3e4d; box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
+    
+    .badge-tag {
+      position: absolute; top: 12px; right: 12px; background: rgba(255, 56, 92, 0.2);
+      color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;
+    }
+    
+    .food-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .food-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px; min-height: 36px; }
+    .food-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+    .food-price { font-size: 1.15rem; font-weight: 800; color: var(--accent); }
+
+    /* Controle de Quantidade */
+    .qty-control { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border); }
+    .qty-btn {
+      background: var(--surface-hover); border: none; color: var(--text); width: 28px; height: 28px;
+      border-radius: 6px; font-weight: 800; cursor: pointer; transition: background 0.2s;
+    }
+    .qty-btn:hover { background: var(--primary); }
+    .qty-val { font-weight: 700; font-size: 0.9rem; min-width: 18px; text-align: center; }
+
+    /* Floating Cart (Barra Flutuante) */
+    .floating-cart {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      width: calc(100% - 40px); max-width: 860px; background: var(--primary);
+      color: #fff; padding: 14px 24px; border-radius: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 10px 30px rgba(255, 56, 92, 0.4); cursor: pointer;
+      transition: all 0.3s ease; animation: slideUp 0.4s ease;
+    }
+    .floating-cart:hover { background: var(--primary-hover); transform: translateX(-50%) scale(1.02); }
+    .cart-badge { background: #fff; color: var(--primary); font-weight: 800; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; }
+
+    /* Checkout & Formulário */
+    .hidden { display: none !important; }
+    .checkout-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-top: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+    .form-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      padding: 12px 14px; border-radius: 10px; color: var(--text); outline: none; font-size: 0.95rem;
+    }
+    .form-input:focus { border-color: var(--primary); }
+
+    /* Modal de Status de Pedido */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; p: 20px; z-index: 999;
+    }
+    .modal-content {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 24px;
+      padding: 30px; max-width: 450px; width: 100%; text-align: center; position: relative;
+    }
+    .timeline { display: flex; justify-content: space-between; margin: 30px 0; position: relative; }
+    .timeline::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: var(--border); z-index: 1; }
+    .time-step { position: relative; z-index: 2; background: var(--surface); padding: 0 6px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+    .time-step.active { color: var(--accent); }
+    .btn-submit {
+      width: 100%; background: var(--accent); color: #fff; border: none; padding: 16px;
+      border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    @keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+  </style>
 </head>
 <body>
 
-  <!-- CABEÇALHO -->
-  <header class="hero-header">
-    <div class="header-content">
-      <div class="logo-area">
-        <span class="logo-emoji">🍲</span>
-        <div>
-          <h1>Sabor & Cia</h1>
-          <p>Marmitas & Lanches Artesanais</p>
-        </div>
-      </div>
-      <div class="status-aberto">
-        <span class="ponto-pulso"></span>
-        Aberto agora
-      </div>
-    </div> <!-- Tag /div fechada corretamente aqui -->
+  <header>
+    <div class="brand">
+      <h1>Sabor <span>& Cia</span></h1>
+    </div>
+    <div class="status-badge">Aberto Agora</div>
   </header>
 
-  <!-- NAVEGAÇÃO / CATEGORIAS -->
-  <nav class="categories-bar">
-    <button class="cat-btn active" onclick="filtrarCategoria('todas', this)">🍽️ Todos</button>
-    <button class="cat-btn" onclick="filtrarCategoria('marmita', this)">🍱 Marmitas</button>
-    <button class="cat-btn" onclick="filtrarCategoria('lanche', this)">🍔 Lanches</button>
-    <button class="cat-btn" onclick="filtrarCategoria('bebida', this)">🥤 Bebidas</button>
-    <button class="cat-btn" onclick="filtrarCategoria('sobremesa', this)">🍰 Sobremesas</button>
-  </nav>
+  <div class="container">
 
-  <main class="main-container">
-    
-    <!-- ETAPA 1: CARDÁPIO -->
-    <section id="step-menu" class="step-section">
+    <!-- PASSO 1: MENU -->
+    <div id="step-menu">
       <div class="search-box">
-        <span>🔍</span>
-        <input type="text" id="search-input" placeholder="Buscar no cardápio..." onkeyup="filtrarProdutos()">
+        🔍 <input type="text" id="search-input" placeholder="Buscar prato, hambúrguer, bebida..." onkeyup="filtrarProdutos()">
       </div>
 
-      <div class="menu-grid" id="menu-grid">
-        
-        <!-- ITEM 1 -->
-        <div class="food-card" data-cat="marmita" data-nome="feijoada completa marmita">
-          <div class="card-badge fire">Mais Pedido 🔥</div>
-          <div class="food-info">
-            <h3>Feijoada Completa (G)</h3>
-            <p>Arroz, couve refogada, farofa da casa, torresmo e bisteca suína.</p>
-            <span class="food-price">R$ 26,90</span>
-          </div>
-          <div class="card-actions">
-            <button class="btn-qty" onclick="alterarQtd('feijoada', -1)">-</button>
-            <span class="qty-num" id="qty-feijoada">0</span>
-            <button class="btn-qty add" onclick="alterarQtd('feijoada', 1)">+</button>
-          </div>
-        </div>
-
-        <!-- ITEM 2 -->
-        <div class="food-card" data-cat="marmita" data-nome="bife acebolado marmita">
-          <div class="food-info">
-            <h3>Bife Acebolado (M)</h3>
-            <p>Arroz, feijão carioquinha, bife acebolado e batata crocante.</p>
-            <span class="food-price">R$ 21,90</span>
-          </div>
-          <div class="card-actions">
-            <button class="btn-qty" onclick="alterarQtd('bife', -1)">-</button>
-            <span class="qty-num" id="qty-bife">0</span>
-            <button class="btn-qty add" onclick="alterarQtd('bife', 1)">+</button>
-          </div>
-        </div>
-
-        <!-- ITEM 3 -->
-        <div class="food-card" data-cat="lanche" data-nome="x-tudo artesanal hamburguer">
-          <div class="card-badge chef">Recomendado 👨‍🍳</div>
-          <div class="food-info">
-            <h3>X-Tudo Especial</h3>
-            <p>Pão brioche, hambúrguer 150g, queijo, bacon, ovo e maionese verde.</p>
-            <span class="food-price">R$ 24,00</span>
-          </div>
-          <div class="card-actions">
-            <button class="btn-qty" onclick="alterarQtd('xtudo', -1)">-</button>
-            <span class="qty-num" id="qty-xtudo">0</span>
-            <button class="btn-qty add" onclick="alterarQtd('xtudo', 1)">+</button>
-          </div>
-        </div>
-
-        <!-- ITEM 4 -->
-        <div class="food-card" data-cat="lanche" data-nome="smash burger duplo">
-          <div class="food-info">
-            <h3>Smash Duplo Cheddar</h3>
-            <p>2x Smash burger 90g, cheddar duplo cremoso e cebola caramelizada.</p>
-            <span class="food-price">R$ 22,50</span>
-          </div>
-          <div class="card-actions">
-            <button class="btn-qty" onclick="alterarQtd('smash', -1)">-</button>
-            <span class="qty-num" id="qty-smash">0</span>
-            <button class="btn-qty add" onclick="alterarQtd('smash', 1)">+</button>
-          </div>
-        </div>
-
-        <!-- ITEM 5 -->
-        <div class="food-card" data-cat="bebida" data-nome="refrigerante coca guarana">
-          <div class="food-info">
-            <h3>Refrigerante Lata 350ml</h3>
-            <p>Coca-Cola, Guaraná Antarctica ou Fanta bem gelados.</p>
-            <span class="food-price">R$ 6,00</span>
-          </div>
-          <div class="card-actions">
-            <button class="btn-qty" onclick="alterarQtd('refri', -1)">-</button>
-            <span class="qty-num" id="qty-refri">0</span>
-            <button class="btn-qty add" onclick="alterarQtd('refri', 1)">+</button>
-          </div>
-        </div>
-
-        <!-- ITEM 6 -->
-        <div class="food-card" data-cat="sobremesa" data-nome="pudim de leite moça">
-          <div class="food-info">
-            <h3>Pudim de Leite Cremoso</h3>
-            <p>Fatia generosa com bastante calda de caramelo caseira.</p>
-            <span class="food-price">R$ 8,50</span>
-          </div>
-          <div class="card-actions">
-            <button class="btn-qty" onclick="alterarQtd('pudim', -1)">-</button>
-            <span class="qty-num" id="qty-pudim">0</span>
-            <button class="btn-qty add" onclick="alterarQtd('pudim', 1)">+</button>
-          </div>
-        </div>
-
+      <div class="categories">
+        <button class="cat-btn active" onclick="filtrarCategoria('todas', this)">🔥 Todos</button>
+        <button class="cat-btn" onclick="filtrarCategoria('marmitas', this)">🍱 Marmitas</button>
+        <button class="cat-btn" onclick="filtrarCategoria('burgers', this)">🍔 Lanches</button>
+        <button class="cat-btn" onclick="filtrarCategoria('bebidas', this)">🥤 Bebidas</button>
+        <button class="cat-btn" onclick="filtrarCategoria('sobremesas', this)">🍰 Sobremesas</button>
       </div>
-    </section>
 
-    <!-- ETAPA 2: DADOS DE ENTREGA E PAGAMENTO -->
-    <section id="step-checkout" class="step-section hidden">
-      <button class="btn-back" onclick="irParaEtapa('menu')">← Voltar ao Cardápio</button>
-      
-      <div class="checkout-card animate-slide-up">
-        <h2>📝 Dados de Entrega e Pagamento</h2>
-        
-        <form id="form-pedido">
-          <div class="input-field">
-            <label for="nome">Nome Completo *</label>
-            <input type="text" id="nome" placeholder="Digite seu nome" required oninput="salvarFormulario()">
-          </div>
-
-          <div class="input-field">
-            <label for="telefone">WhatsApp / Celular *</label>
-            <input type="tel" id="telefone" placeholder="(00) 90000-0000" maxlength="15" required oninput="mascaraTelefone(this); salvarFormulario();">
-          </div>
-
-          <!-- CEP COM CÁLCULO DINÂMICO -->
-          <div class="cep-group">
-            <div class="input-field">
-              <label for="cep">CEP de Entrega *</label>
-              <input type="text" id="cep" placeholder="00000-000" maxlength="9" onblur="consultarCEP()" oninput="salvarFormulario()" required>
+      <div class="grid-menu">
+        <!-- Marmitas -->
+        <div class="food-card" data-cat="marmitas" data-nome="feijoada completa">
+          <span class="badge-tag">Mais Pedido</span>
+          <div class="food-title">Feijoada Completa G</div>
+          <div class="food-desc">Acompanha couve refogada, farofa da casa, torresmo crocante e arroz branco.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 26,90</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('feijoada', -1)">-</button>
+              <span class="qty-val" id="qty-feijoada">0</span>
+              <button class="qty-btn" onclick="alterarQtd('feijoada', 1)">+</button>
             </div>
-            <button type="button" class="btn-buscacep" onclick="consultarCEP()">Calcular Taxa</button>
           </div>
-          <span id="cep-status" class="cep-status"></span>
+        </div>
 
-          <div class="input-field">
-            <label for="endereco">Endereço e Bairro *</label>
-            <input type="text" id="endereco" placeholder="Rua, Número e Bairro" required oninput="salvarFormulario()">
+        <div class="food-card" data-cat="marmitas" data-nome="bife acebolado">
+          <div class="food-title">Bife Acebolado M</div>
+          <div class="food-desc">Bife acebolado suculento, arroz fresquinho, feijão caseiro e batata frita.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 21,90</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('bife', -1)">-</button>
+              <span class="qty-val" id="qty-bife">0</span>
+              <button class="qty-btn" onclick="alterarQtd('bife', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Burgers -->
+        <div class="food-card" data-cat="burgers" data-nome="x-tudo artesanal">
+          <span class="badge-tag">Chef</span>
+          <div class="food-title">X-Tudo Artesanal</div>
+          <div class="food-desc">Burger 160g, queijo prato, bacon artesanal, ovo, alface, tomate e maionese especial.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 24,00</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('xtudo', -1)">-</button>
+              <span class="qty-val" id="qty-xtudo">0</span>
+              <button class="qty-btn" onclick="alterarQtd('xtudo', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-card" data-cat="burgers" data-nome="smash duplo cheese">
+          <div class="food-title">Smash Duplo Cheese</div>
+          <div class="food-desc">2x Smash burger 80g, duplo cheddar fatiado e molho da casa no pão brioche.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 22,50</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('smash', -1)">-</button>
+              <span class="qty-val" id="qty-smash">0</span>
+              <button class="qty-btn" onclick="alterarQtd('smash', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bebidas & Sobremesas -->
+        <div class="food-card" data-cat="bebidas" data-nome="refrigerante lata 350ml">
+          <div class="food-title">Refri Lata 350ml</div>
+          <div class="food-desc">Coca-Cola, Guaraná Antarctica ou Fanta Laranja (bem gelada).</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 6,00</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('refri', -1)">-</button>
+              <span class="qty-val" id="qty-refri">0</span>
+              <button class="qty-btn" onclick="alterarQtd('refri', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-card" data-cat="sobremesas" data-nome="pudim de leite moça">
+          <span class="badge-tag">Novo</span>
+          <div class="food-title">Pudim de Leite Moça</div>
+          <div class="food-desc">Fatia generosa de pudim tradicional super cremoso com calda de caramelo.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 8,50</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('pudim', -1)">-</button>
+              <span class="qty-val" id="qty-pudim">0</span>
+              <button class="qty-btn" onclick="alterarQtd('pudim', 1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSO 2: CHECKOUT & DADOS -->
+    <div id="step-checkout" class="hidden">
+      <button class="cat-btn" onclick="irParaEtapa('menu')">⬅️ Voltar ao Cardápio</button>
+      
+      <div class="checkout-card">
+        <h2 style="margin-bottom: 20px;">📋 Dados do Pedido & Entrega</h2>
+        <form id="form-pedido">
+          <div class="form-group">
+            <label>Seu Nome Completo *</label>
+            <input type="text" id="nome" class="form-input" placeholder="Ex: Wellington Silva" required oninput="salvarFormulario()">
           </div>
 
-          <div class="input-field">
-            <label for="complemento">Complemento / Ponto de Referência</label>
-            <input type="text" id="complemento" placeholder="Ex: Ap 102, Bloco C / Em frente à padaria" oninput="salvarFormulario()">
+          <div class="form-group">
+            <label>WhatsApp / Telefone *</label>
+            <input type="tel" id="telefone" class="form-input" placeholder="(41) 99999-9999" required oninput="mascaraTelefone(this); salvarFormulario();">
           </div>
 
-          <div class="input-field">
-            <label for="obs">Observações do Pedido</label>
-            <textarea id="obs" rows="2" placeholder="Sem cebola, tirar maionese, troco para R$ 50..." oninput="salvarFormulario()"></textarea>
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
+            <div class="form-group">
+              <label>CEP *</label>
+              <input type="text" id="cep" class="form-input" placeholder="83000-000" maxlength="9" onkeyup="consultarCEP(); salvarFormulario();">
+            </div>
+            <div class="form-group">
+              <label>Endereço e Bairro *</label>
+              <input type="text" id="endereco" class="form-input" placeholder="Rua, Número e Bairro" required oninput="salvarFormulario()">
+            </div>
+          </div>
+          <p id="cep-status" style="font-size: 0.8rem; color: var(--accent); margin-top: -10px; margin-bottom: 15px;"></p>
+
+          <div class="form-group">
+            <label>Complemento / Ponto de Referência</label>
+            <input type="text" id="complemento" class="form-input" placeholder="Apt 102, Bloco B..." oninput="salvarFormulario()">
           </div>
 
-          <div class="input-field">
-            <label for="pagamento">Forma de Pagamento *</label>
-            <select id="pagamento" required onchange="mudarPagamento(); salvarFormulario();">
-              <option value="">Selecione como deseja pagar...</option>
-              <option value="PIX">PIX (Chave Copia e Cola)</option>
-              <option value="Cartão de Crédito">Cartão de Crédito (Na Maquininha)</option>
-              <option value="Cartão de Débito">Cartão de Débito (Na Maquininha)</option>
-              <option value="Dinheiro">Dinheiro</option>
+          <div class="form-group">
+            <label>Forma de Pagamento *</label>
+            <select id="pagamento" class="form-input" onchange="mudarPagamento(); salvarFormulario();">
+              <option value="PIX">⚡ PIX (Aprovação Instantânea)</option>
+              <option value="Cartão de Crédito/Débito">💳 Cartão na Entrega</option>
+              <option value="Dinheiro">💵 Dinheiro</option>
             </select>
           </div>
 
-          <div id="pix-box" class="pix-card hidden animate-fade-in">
-            <p><strong>Chave PIX (CNPJ):</strong> <code>12.345.678/0001-99</code></p>
-            <small>Chave pronta para colar no seu banco pós-confirmação.</small>
+          <div id="pix-box" class="form-group" style="background: rgba(0, 200, 83, 0.1); padding: 12px; border-radius: 10px; border: 1px dashed var(--accent);">
+            <p style="font-size: 0.85rem; color: var(--accent);">🔑 Chave PIX CNPJ: <strong>00.000.000/0001-00</strong><br>Envie o comprovante pelo WhatsApp ao finalizar!</p>
+          </div>
+
+          <div class="form-group">
+            <label>Observações do Pedido</label>
+            <textarea id="obs" class="form-input" rows="2" placeholder="Tirar cebola, caprichar no molho..." oninput="salvarFormulario()"></textarea>
           </div>
 
           <!-- RESUMO FINANCEIRO -->
-          <div class="resumo-financeiro">
-            <div class="linha-resumo">
-              <span>Subtotal Itens:</span>
-              <span id="subtotal-txt">R$ 0,00</span>
+          <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px;">
+              <span style="color: var(--text-muted);">Subtotal:</span>
+              <strong id="subtotal-txt">R$ 0,00</strong>
             </div>
-            <div class="linha-resumo">
-              <span>Taxa de Entrega:</span>
-              <span id="taxa-txt" class="taxa-highlight">A calcular pelo CEP</span>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px;">
+              <span style="color: var(--text-muted);">Taxa de Entrega:</span>
+              <strong id="taxa-txt">A calcular pelo CEP</strong>
             </div>
-            <hr>
-            <div class="linha-resumo total">
-              <span>Total a Pagar:</span>
-              <span id="total-txt">R$ 0,00</span>
+            <hr style="border-color: var(--border); margin: 10px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800;">
+              <span>Total Geral:</span>
+              <span id="total-txt" style="color: var(--accent);">R$ 0,00</span>
             </div>
           </div>
 
-          <button type="submit" id="btn-finalizar" class="btn-main-submit">
-            🚀 Confirmar & Enviar no WhatsApp
-          </button>
+          <button type="submit" class="btn-submit">📱 Enviar Pedido via WhatsApp</button>
         </form>
       </div>
-    </section>
-
-    <!-- ETAPA 3: TELA DE SUCESSO / PEDIDO CONCLUÍDO -->
-    <section id="step-success" class="step-section hidden">
-      <div class="success-card animate-pop">
-        <div class="success-icon">🎉</div>
-        <h2>Pedido Enviado com Sucesso!</h2>
-        <p>Acompanhe o status e a entrega diretamente com nosso atendente no WhatsApp.</p>
-        
-        <div class="success-actions">
-          <button class="btn-reset" onclick="reiniciarPedido()">🔄 Voltar ao Início / Novo Pedido</button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- BARRA FLUTUANTE DE CARRINHO (Ajustado onclick para irParaEtapa) -->
-  <div id="floating-cart" class="floating-cart hidden animate-bounce" onclick="irParaEtapa('checkout')">
-    <div class="cart-info">
-      <span class="cart-icon">🛒</span>
-      <span id="cart-count-badge" class="count-badge">0</span>
-      <span>Fazer Pedido</span>
     </div>
-    <span id="floating-total" class="cart-total">R$ 0,00</span>
+
+  </div>
+
+  <!-- CARRY FLOATING BAR -->
+  <div id="floating-cart" class="floating-cart hidden" onclick="irParaEtapa('checkout')">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="cart-badge" id="cart-count-badge">0</span>
+      <span style="font-weight: 700;">Ver Carrinho</span>
+    </div>
+    <strong id="floating-total" style="font-size: 1.1rem;">R$ 0,00</strong>
+  </div>
+
+  <!-- MODAL DE STATUS DO PEDIDO -->
+  <div id="modal-status" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2>🎉 Pedido Enviado!</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">Seu pedido já foi encaminhado para a nossa cozinha via WhatsApp.</p>
+      
+      <div class="timeline">
+        <div class="time-step active">1. Recebido</div>
+        <div class="time-step active">2. Cozinha</div>
+        <div class="time-step">3. Entrega</div>
+      </div>
+
+      <p style="font-size: 0.85rem; background: var(--bg); padding: 10px; border-radius: 10px; margin-bottom: 20px;">
+        💡 <strong>Status atual:</strong> Aguardando confirmação no WhatsApp
+      </p>
+
+      <button class="btn-submit" onclick="reiniciarPedido(); document.getElementById('modal-status').classList.add('hidden');">Fazer Novo Pedido</button>
+    </div>
   </div>
 
   <script src="script.js"></script>
