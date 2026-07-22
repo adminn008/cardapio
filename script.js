@@ -1,5 +1,6 @@
-const SCRIPT_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI"; // Deixe vazio ou cole sua URL se quiser o Google Sheets opcional
-const SEU_WHATSAPP = "5541999999999"; // Coloque seu WhatsApp com DDD
+// CONFIGURAÇÕES DO SISTEMA
+const SCRIPT_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI"; // Opcional
+const SEU_WHATSAPP = "5541999999999"; // Substitua pelo seu WhatsApp comercial com DDD
 
 const PRECOS = {
   feijoada: 26.90,
@@ -13,10 +14,7 @@ const PRECOS = {
 let carrinho = { feijoada: 0, bife: 0, xtudo: 0, smash: 0, refri: 0, pudim: 0 };
 let taxaEntregaCalculada = null;
 
-// Canal para comunicar o painel KDS em tempo real na mesma máquina
-const canalPedidos = new BroadcastChannel('canal_kds');
-
-// 1. MÁSCARA AUTOMÁTICA DE TELEFONE (XX) XXXXX-XXXX / (XX) XXXX-XXXX
+// 1. MÁSCARA AUTOMÁTICA DE TELEFONE
 function mascaraTelefone(input) {
   let v = input.value.replace(/\D/g, "");
   if (v.length > 11) v = v.slice(0, 11);
@@ -30,15 +28,13 @@ function mascaraTelefone(input) {
   } else {
     v = v.replace(/^(\d*)$/, "($1");
   }
-  
   input.value = v;
 }
 
-// 2. CONTROLE DE NAVEGAÇÃO DE ETAPAS
+// 2. NAVEGAÇÃO DE ETAPAS
 function irParaEtapa(etapa) {
   document.getElementById("step-menu").classList.add("hidden");
   document.getElementById("step-checkout").classList.add("hidden");
-  document.getElementById("step-success").classList.add("hidden");
 
   if (etapa === "menu") {
     document.getElementById("step-menu").classList.remove("hidden");
@@ -51,15 +47,10 @@ function irParaEtapa(etapa) {
     }
     document.getElementById("step-checkout").classList.remove("hidden");
     window.scrollTo({ top: 0, behavior: "smooth" });
-  } else if (etapa === "success") {
-    document.getElementById("step-success").classList.remove("hidden");
-    const floatingCart = document.getElementById("floating-cart");
-    if (floatingCart) floatingCart.classList.add("hidden");
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }
 
-// 3. ALTERAR QUANTIDADE E SALVAR NO LOCALSTORAGE
+// 3. ALTERAR QUANTIDADE E ATUALIZAR RESUMO
 function alterarQtd(item, valor) {
   if (carrinho[item] + valor >= 0) {
     carrinho[item] += valor;
@@ -82,52 +73,43 @@ function atualizarResumo() {
   const taxaFinal = taxaEntregaCalculada !== null ? taxaEntregaCalculada : 0;
   const totalGeral = subtotal + taxaFinal;
 
-  const subtotalTxt = document.getElementById("subtotal-txt");
-  if (subtotalTxt) subtotalTxt.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+  document.getElementById("subtotal-txt").textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
   
   const taxaTxt = document.getElementById("taxa-txt");
-  if (taxaTxt) {
-    if (taxaEntregaCalculada !== null) {
-      taxaTxt.textContent = `R$ ${taxaFinal.toFixed(2).replace('.', ',')}`;
-      taxaTxt.className = "";
-    } else {
-      taxaTxt.textContent = "A calcular pelo CEP";
-      taxaTxt.className = "taxa-highlight";
-    }
+  if (taxaEntregaCalculada !== null) {
+    taxaTxt.textContent = `R$ ${taxaFinal.toFixed(2).replace('.', ',')}`;
+  } else {
+    taxaTxt.textContent = "A calcular pelo CEP";
   }
 
-  const totalTxt = document.getElementById("total-txt");
-  if (totalTxt) totalTxt.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+  document.getElementById("total-txt").textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
 
-  // Atualiza Barra Flutuante
   const floatingCart = document.getElementById("floating-cart");
   if (floatingCart) {
     if (totalItens > 0) {
       floatingCart.classList.remove("hidden");
-      const cartCountBadge = document.getElementById("cart-count-badge");
-      const floatingTotal = document.getElementById("floating-total");
-      if (cartCountBadge) cartCountBadge.textContent = totalItens;
-      if (floatingTotal) floatingTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+      document.getElementById("cart-count-badge").textContent = totalItens;
+      document.getElementById("floating-total").textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
     } else {
       floatingCart.classList.add("hidden");
     }
   }
 }
 
-// 4. TAXA DINÂMICA REAL BASEADA NO CEP
+// 4. CÁLCULO DINÂMICO VIA CEP
 async function consultarCEP() {
   const cepInput = document.getElementById("cep").value.replace(/\D/g, "");
   const statusTxt = document.getElementById("cep-status");
 
   if (cepInput.length === 8) {
-    if (statusTxt) statusTxt.textContent = "🔍 Buscando endereço e calculando taxa...";
+    statusTxt.textContent = "🔍 Buscando endereço e calculando taxa...";
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cepInput}/json/`);
       const data = await res.json();
 
       if (!data.erro) {
         document.getElementById("endereco").value = `${data.logradouro}, Bairro: ${data.bairro}`;
-        if (statusTxt) statusTxt.textContent = `📍 Localizado em ${data.localidade} - ${data.uf}`;
+        statusTxt.textContent = `📍 Localizado em ${data.localidade} - ${data.uf}`;
 
         const digitoRegiao = parseInt(cepInput.charAt(5));
         taxaEntregaCalculada = 5.00 + (digitoRegiao % 4) * 2.50;
@@ -135,22 +117,18 @@ async function consultarCEP() {
         salvarEstado();
         atualizarResumo();
       } else {
-        if (statusTxt) statusTxt.textContent = "⚠️ CEP não encontrado! Preencha o endereço manualmente.";
+        statusTxt.textContent = "⚠️ CEP não encontrado! Preencha o endereço manualmente.";
       }
     } catch (err) {
-      if (statusTxt) statusTxt.textContent = "Erro ao buscar CEP. Verifique sua conexão.";
+      statusTxt.textContent = "Erro ao buscar CEP. Verifique sua conexão.";
     }
   }
 }
 
-// 5. FILTRAGEM POR CATEGORIA E BUSCA
+// 5. FILTRAGEM DE CATEGORIA E BUSCA
 function filtrarCategoria(cat, elemento) {
   document.querySelectorAll(".cat-btn").forEach(btn => btn.classList.remove("active"));
-  if (elemento) {
-    elemento.classList.add("active");
-  } else if (window.event && window.event.target) {
-    window.event.target.classList.add("active");
-  }
+  if (elemento) elemento.classList.add("active");
 
   const cards = document.querySelectorAll(".food-card");
   cards.forEach(card => {
@@ -174,8 +152,7 @@ function filtrarProdutos() {
 
 function mudarPagamento() {
   const val = document.getElementById("pagamento").value;
-  const pixBox = document.getElementById("pix-box");
-  if (pixBox) pixBox.classList.toggle("hidden", val !== "PIX");
+  document.getElementById("pix-box").classList.toggle("hidden", val !== "PIX");
 }
 
 // 6. PERSISTÊNCIA EM LOCALSTORAGE
@@ -210,9 +187,7 @@ function carregarEstadoSalvo() {
     }
   }
 
-  if (taxaSalva !== null) {
-    taxaEntregaCalculada = JSON.parse(taxaSalva);
-  }
+  if (taxaSalva !== null) taxaEntregaCalculada = JSON.parse(taxaSalva);
 
   if (formSalvo) {
     const dados = JSON.parse(formSalvo);
@@ -223,22 +198,18 @@ function carregarEstadoSalvo() {
     if (dados.complemento) document.getElementById("complemento").value = dados.complemento;
     if (dados.obs) document.getElementById("obs").value = dados.obs;
     if (dados.pagamento) {
-      const pagEl = document.getElementById("pagamento");
-      if (pagEl) {
-        pagEl.value = dados.pagamento;
-        mudarPagamento();
-      }
+      document.getElementById("pagamento").value = dados.pagamento;
+      mudarPagamento();
     }
   }
 
   atualizarResumo();
 }
 
-// 7. VOLTAR AO INÍCIO / ZERAR TUDO
+// 7. ZERAR PEDIDO
 function reiniciarPedido() {
   localStorage.removeItem("carrinho_sabor_cia");
   localStorage.removeItem("taxa_sabor_cia");
-  localStorage.removeItem("form_sabor_cia");
 
   carrinho = { feijoada: 0, bife: 0, xtudo: 0, smash: 0, refri: 0, pudim: 0 };
   taxaEntregaCalculada = null;
@@ -248,15 +219,11 @@ function reiniciarPedido() {
     if (el) el.textContent = "0";
   }
 
-  const form = document.getElementById("form-pedido");
-  if (form) form.reset();
-  
-  mudarPagamento();
   atualizarResumo();
   irParaEtapa("menu");
 }
 
-// 8. PROCESSAR ENVIO E INTEGRAR COM O PAINEL KDS LOCAL
+// 8. ENVIO PARA WHATSAPP E REGISTRO NA PLANILHA
 function processarEnvioPedido(e) {
   e.preventDefault();
 
@@ -282,52 +249,23 @@ function processarEnvioPedido(e) {
   const totalFormatado = `R$ ${totalNum.toFixed(2).replace('.', ',')}`;
   const textoItens = listaItens.join(", ");
   const agora = new Date();
-  const horaFormatada = agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-  // --- GRAVAÇÃO LOCAL PARA O PAINEL KDS FUNCIONAR SEM ERROS ---
-  const novoPedido = {
-    id: Math.floor(100 + Math.random() * 900),
-    hora: horaFormatada,
-    cliente: nome,
-    endereco: comp !== "-" ? `${end} (${comp})` : end,
-    taxa: taxa,
-    pagamento: pag,
-    itens: textoItens,
-    obs: obs,
-    total: totalNum,
-    status: "ativo"
-  };
-
-  let listaPedidos = JSON.parse(localStorage.getItem('pedidos_kds')) || [];
-  listaPedidos.push(novoPedido);
-  localStorage.setItem('pedidos_kds', JSON.stringify(listaPedidos));
-
-  // Avisa a aba do painel aberto instantaneamente
-  canalPedidos.postMessage({ acao: 'novo_pedido' });
-
-  // Opcional: Envio para a planilha se a URL estiver configurada
+  // ENVIO SILENCIOSO PARA A PLANILHA (BACKGROUND)
   if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
     fetch(SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        action: "novo_pedido",
-        id: novoPedido.id,
-        cliente: nome,
-        endereco: novoPedido.endereco,
-        itens: textoItens,
-        total: totalNum,
-        pagamento: pag,
-        taxa: taxa,
-        obs: obs,
-        hora: horaFormatada
+        data: agora.toLocaleString("pt-BR"),
+        nome, tel, endereco: `${end} (${comp})`,
+        itens: textoItens, obs, pagamento: pag, total: totalFormatado
       })
-    }).catch(err => console.log("Aviso de sincronização da planilha:", err));
+    }).catch(() => {});
   }
 
-  // Gera mensagem para o WhatsApp
-  const msg = `*NOVO PEDIDO NO SITE!*%0A%0A` +
+  // MENSAGEM WHATSAPP
+  const msg = `*NOVO PEDIDO - SABOR & CIA*%0A%0A` +
     `👤 *Cliente:* ${nome}%0A` +
     `📞 *Telefone:* ${tel}%0A` +
     `📍 *Endereço:* ${end}%0A` +
@@ -339,7 +277,8 @@ function processarEnvioPedido(e) {
 
   window.open(`https://wa.me/${SEU_WHATSAPP}?text=${msg}`, '_blank');
   
-  irParaEtapa("success");
+  // Exibe Modal de Acompanhamento
+  document.getElementById("modal-status").classList.remove("hidden");
 }
 
 function inicializar() {
