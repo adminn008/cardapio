@@ -16,14 +16,12 @@
       --text: #F3F3F5;
       --text-muted: #8E8E9A;
       --accent: #00C853;
-      --warning: #FFB300;
       --radius: 16px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg); color: var(--text); padding-bottom: 100px; min-height: 100vh; overflow-x: hidden; }
 
-    /* Header e Banner */
     header {
       background: linear-gradient(180deg, rgba(255, 56, 92, 0.15) 0%, rgba(15, 15, 18, 0) 100%);
       padding: 24px 20px;
@@ -42,16 +40,13 @@
       border-radius: 50%; box-shadow: 0 0 8px var(--accent);
     }
 
-    /* Container Principal */
     .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
-    /* Busca e Categorias */
     .search-box {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 12px 18px; margin-bottom: 20px;
-      display: flex; align-items: center; gap: 10px; transition: all 0.3s;
+      display: flex; align-items: center; gap: 10px;
     }
-    .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.2); }
     .search-box input {
       background: transparent; border: none; outline: none; color: var(--text);
       width: 100%; font-size: 0.95rem;
@@ -65,12 +60,11 @@
     }
     .cat-btn.active, .cat-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateY(-2px); }
 
-    /* Grid de Cardápio */
     .grid-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
     .food-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
       padding: 16px; display: flex; flex-direction: column; justify-content: space-between;
-      position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative; transition: all 0.3s ease;
     }
     .food-card:hover { transform: translateY(-4px); border-color: #3e3e4d; box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
     
@@ -84,7 +78,6 @@
     .food-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
     .food-price { font-size: 1.15rem; font-weight: 800; color: var(--accent); }
 
-    /* Controle de Quantidade */
     .qty-control { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border); }
     .qty-btn {
       background: var(--surface-hover); border: none; color: var(--text); width: 28px; height: 28px;
@@ -93,19 +86,17 @@
     .qty-btn:hover { background: var(--primary); }
     .qty-val { font-weight: 700; font-size: 0.9rem; min-width: 18px; text-align: center; }
 
-    /* Floating Cart (Barra Flutuante) */
     .floating-cart {
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       width: calc(100% - 40px); max-width: 860px; background: var(--primary);
       color: #fff; padding: 14px 24px; border-radius: 20px;
       display: flex; justify-content: space-between; align-items: center;
       box-shadow: 0 10px 30px rgba(255, 56, 92, 0.4); cursor: pointer;
-      transition: all 0.3s ease; animation: slideUp 0.4s ease;
+      transition: all 0.3s ease;
     }
     .floating-cart:hover { background: var(--primary-hover); transform: translateX(-50%) scale(1.02); }
     .cart-badge { background: #fff; color: var(--primary); font-weight: 800; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; }
 
-    /* Checkout & Formulário */
     .hidden { display: none !important; }
     .checkout-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-top: 20px; }
     .form-group { margin-bottom: 16px; }
@@ -116,35 +107,17 @@
     }
     .form-input:focus { border-color: var(--primary); }
 
-    /* Modal de Status de Pedido */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center; p: 20px; z-index: 999;
-    }
-    .modal-content {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 24px;
-      padding: 30px; max-width: 450px; width: 100%; text-align: center; position: relative;
-    }
-    .timeline { display: flex; justify-content: space-between; margin: 30px 0; position: relative; }
-    .timeline::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: var(--border); z-index: 1; }
-    .time-step { position: relative; z-index: 2; background: var(--surface); padding: 0 6px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
-    .time-step.active { color: var(--accent); }
     .btn-submit {
       width: 100%; background: var(--accent); color: #fff; border: none; padding: 16px;
       border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; transition: all 0.2s;
     }
     .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
-
-    @keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="brand">
-      <h1>Sabor <span>& Cia</span></h1>
-    </div>
+    <div class="brand"><h1>Sabor <span>& Cia</span></h1></div>
     <div class="status-badge">Aberto Agora</div>
   </header>
 
@@ -165,7 +138,6 @@
       </div>
 
       <div class="grid-menu">
-        <!-- Marmitas -->
         <div class="food-card" data-cat="marmitas" data-nome="feijoada completa">
           <span class="badge-tag">Mais Pedido</span>
           <div class="food-title">Feijoada Completa G</div>
@@ -193,7 +165,6 @@
           </div>
         </div>
 
-        <!-- Burgers -->
         <div class="food-card" data-cat="burgers" data-nome="x-tudo artesanal">
           <span class="badge-tag">Chef</span>
           <div class="food-title">X-Tudo Artesanal</div>
@@ -221,7 +192,6 @@
           </div>
         </div>
 
-        <!-- Bebidas & Sobremesas -->
         <div class="food-card" data-cat="bebidas" data-nome="refrigerante lata 350ml">
           <div class="food-title">Refri Lata 350ml</div>
           <div class="food-desc">Coca-Cola, Guaraná Antarctica ou Fanta Laranja (bem gelada).</div>
@@ -303,7 +273,6 @@
             <textarea id="obs" class="form-input" rows="2" placeholder="Tirar cebola, caprichar no molho..." oninput="salvarFormulario()"></textarea>
           </div>
 
-          <!-- RESUMO FINANCEIRO -->
           <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin: 20px 0;">
             <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px;">
               <span style="color: var(--text-muted);">Subtotal:</span>
@@ -327,33 +296,12 @@
 
   </div>
 
-  <!-- CARRY FLOATING BAR -->
   <div id="floating-cart" class="floating-cart hidden" onclick="irParaEtapa('checkout')">
     <div style="display: flex; align-items: center; gap: 12px;">
       <span class="cart-badge" id="cart-count-badge">0</span>
       <span style="font-weight: 700;">Ver Carrinho</span>
     </div>
     <strong id="floating-total" style="font-size: 1.1rem;">R$ 0,00</strong>
-  </div>
-
-  <!-- MODAL DE STATUS DO PEDIDO -->
-  <div id="modal-status" class="modal-overlay hidden">
-    <div class="modal-content">
-      <h2>🎉 Pedido Enviado!</h2>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">Seu pedido já foi encaminhado para a nossa cozinha via WhatsApp.</p>
-      
-      <div class="timeline">
-        <div class="time-step active">1. Recebido</div>
-        <div class="time-step active">2. Cozinha</div>
-        <div class="time-step">3. Entrega</div>
-      </div>
-
-      <p style="font-size: 0.85rem; background: var(--bg); padding: 10px; border-radius: 10px; margin-bottom: 20px;">
-        💡 <strong>Status atual:</strong> Aguardando confirmação no WhatsApp
-      </p>
-
-      <button class="btn-submit" onclick="reiniciarPedido(); document.getElementById('modal-status').classList.add('hidden');">Fazer Novo Pedido</button>
-    </div>
   </div>
 
   <script src="script.js"></script>
