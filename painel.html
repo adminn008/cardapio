@@ -18,15 +18,6 @@
     .status-painel h1 { font-size: 1.4rem; color: #00875f; display: flex; align-items: center; gap: 8px; }
     .status-painel span { font-size: 0.85rem; color: #a8a8b3; font-weight: normal; }
 
-    /* NAVEGAÇÃO DE ABAS */
-    .nav-abas { display: flex; gap: 10px; margin-bottom: 20px; }
-    .btn-aba {
-      background: #202024; border: 1px solid #29292e; color: #a8a8b3;
-      padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;
-      font-size: 0.95rem; transition: all 0.2s;
-    }
-    .btn-aba.ativa { background: #00875f; color: #fff; border-color: #00875f; }
-
     .indicadores { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     .card-info { background: #121214; padding: 8px 15px; border-radius: 8px; border: 1px solid #29292e; }
     .card-info label { display: block; font-size: 0.75rem; color: #8d8d99; }
@@ -37,9 +28,8 @@
     }
     .btn-som { background: #9b51e0; }
     .btn-som.ativo { background: #00875f; }
-    .btn-zerar { background: #da3751; }
 
-    /* GRID DIVIDIDA PARA VÁRIOS PEDIDOS */
+    /* GRID DE PEDIDOS */
     .grid-pedidos {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -52,27 +42,6 @@
       border: 2px solid #29292e; display: flex; flex-direction: column;
       justify-content: space-between; position: relative; transition: all 0.3s;
     }
-
-    /* DESTAQUE DE NOVO PEDIDO */
-    .card-pedido.novo-pedido {
-      border-color: #fba94c;
-      box-shadow: 0 0 15px rgba(251, 169, 76, 0.35);
-      animation: pulso 2s infinite;
-    }
-    @keyframes pulso {
-      0% { border-color: #fba94c; }
-      50% { border-color: #e16e0e; }
-      100% { border-color: #fba94c; }
-    }
-
-    /* CARD DE FECHAMENTO DE TURNO */
-    .card-fechamento {
-      grid-column: 1 / -1; background: #221a30; border: 2px dashed #9b51e0;
-      border-radius: 12px; padding: 15px 20px; display: flex;
-      justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-    }
-    .card-fechamento h3 { color: #d4a5ff; font-size: 1.1rem; }
-    .card-fechamento span { font-weight: 800; color: #00b37e; font-size: 1.2rem; }
 
     .pedido-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -102,7 +71,7 @@
     }
     .val-total { color: #00b37e; font-weight: 800; font-size: 1.1rem; }
 
-    /* BOTOES DE AÇÃO NO CARD */
+    /* BOTÕES DE AÇÃO */
     .acoes-card { display: flex; gap: 8px; }
     
     .btn-concluir {
@@ -121,15 +90,6 @@
     .btn-cancelar:hover { background: #da3751; color: #fff; }
     .btn-cancelar.confirmar { background: #da3751 !important; color: #fff !important; }
 
-    .tag-concluido {
-      background: #00875f22; color: #00b37e; border: 1px solid #00875f;
-      text-align: center; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;
-    }
-    .tag-cancelado {
-      background: #da375122; color: #f75a68; border: 1px solid #da3751;
-      text-align: center; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;
-    }
-
     .vazio-msg {
       grid-column: 1 / -1; text-align: center; color: #8d8d99;
       padding: 60px 20px; font-size: 1.1rem; background: #202024; border-radius: 12px;
@@ -140,7 +100,7 @@
 
   <header>
     <div class="status-painel">
-      <h1>📺 Painel KDS <span>(Cozinha / Gestão)</span></h1>
+      <h1>📺 Painel KDS <span>(Cozinha Em Tempo Real)</span></h1>
     </div>
     <div class="indicadores">
       <button class="btn-acao btn-som" id="btn-ativar-som" onclick="ativarSomAlertas()">🔇 Clique p/ Ativar Som</button>
@@ -152,27 +112,22 @@
         <label>Total do Turno</label>
         <strong id="total-dia-txt">R$ 0,00</strong>
       </div>
-      <button class="btn-acao btn-zerar" onclick="finalizarTurno()">🔒 Finalizar Turno</button>
     </div>
   </header>
 
-  <!-- ABAS DE NAVEGAÇÃO -->
-  <div class="nav-abas">
-    <button class="btn-aba ativa" id="aba-ativos" onclick="mudarAba('ativos')">
-      🛎️ Pedidos Ativos (<span id="qtd-ativos">0</span>)
-    </button>
-    <button class="btn-aba" id="aba-historico" onclick="mudarAba('historico')">
-      📜 Histórico do Dia (<span id="qtd-historico">0</span>)
-    </button>
-  </div>
-
-  <main class="grid-pedidos" id="container-pedidos"></main>
+  <main class="grid-pedidos" id="container-pedidos">
+    <div class="vazio-msg">🔄 Conectando com a planilha...</div>
+  </main>
 
   <script>
-    // 1. GERADOR DE SOM SINTETIZADO ("DING-DONG")
+    const URL_API = "https://script.google.com/macros/s/AKfycbzfzTnNpgAZcICqpbGwy8i7XbDG8Tea75L-r-aou7DpaeaEdmarv5oN9xf95imY9Fft/exec";
+
     let somHabilitado = false;
     let audioCtx = null;
+    let pedidosAtivos = [];
+    let ultimosIdsAtivos = [];
 
+    // 1. SOM DE ALERTA SINTETIZADO
     function ativarSomAlertas() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -217,112 +172,64 @@
       } catch (err) {}
     }
 
-    // 2. MANTER TELA ACESA (WAKE LOCK)
+    // 2. MANTER TELA ACESA
     async function ativarWakeLock() {
       try {
         if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
       } catch (err) {}
     }
     ativarWakeLock();
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === 'visible') ativarWakeLock();
-    });
 
-    // 3. RELÓGIO EM TEMPO REAL
+    // 3. RELÓGIO
     setInterval(() => {
       document.getElementById('relogio-txt').textContent = new Date().toLocaleTimeString('pt-BR');
     }, 1000);
 
-    // 4. ESTADO DOS PEDIDOS E CARREGAMENTO
-    let abaAtual = 'ativos';
-    let pedidosAtivos = [];
-    let historicoPedidos = [];
-    let ultimosIdsAtivos = [];
-
+    // 4. BUSCAR DADOS DA PLANILHA
     function carregarDados() {
-      const novosAtivos = JSON.parse(localStorage.getItem('pedidos_ativos')) || [];
-      historicoPedidos = JSON.parse(localStorage.getItem('historico_pedidos')) || [];
+      fetch(URL_API)
+        .then(res => res.json())
+        .then(dados => {
+          if (!Array.isArray(dados)) return;
 
-      // Toca o som caso detecte novos pedidos
-      if (ultimosIdsAtivos.length > 0) {
-        const novosPedidosEntraram = novosAtivos.filter(p => !ultimosIdsAtivos.includes(p.id));
-        if (novosPedidosEntraram.length > 0) {
-          tocarSomPedido();
-        }
-      }
+          // TOTAL DO TURNO: Soma de todos os pedidos que NÃO foram cancelados
+          const totalTurno = dados
+            .filter(p => p.status !== 'cancelado')
+            .reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
 
-      pedidosAtivos = novosAtivos;
-      ultimosIdsAtivos = pedidosAtivos.map(p => p.id);
-      atualizarContadoresEFaturamento();
+          document.getElementById('total-dia-txt').textContent = 
+            totalTurno.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+          // Filtrar apenas pedidos com status "ativo" para exibir na cozinha
+          const novosAtivos = dados.filter(p => p.status === 'ativo');
+
+          // Alerta sonoro quando entra pedido novo
+          if (ultimosIdsAtivos.length > 0) {
+            const temNovo = novosAtivos.some(p => !ultimosIdsAtivos.includes(String(p.id)));
+            if (temNovo) tocarSomPedido();
+          }
+
+          pedidosAtivos = novosAtivos;
+          ultimosIdsAtivos = pedidosAtivos.map(p => String(p.id));
+
+          renderizar();
+        })
+        .catch(err => console.error("Erro ao buscar pedidos:", err));
     }
 
-    function salvarDados() {
-      localStorage.setItem('pedidos_ativos', JSON.stringify(pedidosAtivos));
-      localStorage.setItem('historico_pedidos', JSON.stringify(historicoPedidos));
-      atualizarContadoresEFaturamento();
-    }
-
-    function atualizarContadoresEFaturamento() {
-      document.getElementById('qtd-ativos').textContent = pedidosAtivos.length;
-      
-      const pedidosEntregues = historicoPedidos.filter(p => p.tipo !== 'fechamento' && p.status !== 'cancelado');
-      document.getElementById('qtd-historico').textContent = historicoPedidos.filter(p => p.tipo !== 'fechamento').length;
-
-      // Soma apenas pedidos entregues
-      const totalVendido = pedidosEntregues.reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
-      document.getElementById('total-dia-txt').textContent = 
-        totalVendido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
-
-    function mudarAba(aba) {
-      abaAtual = aba;
-      document.getElementById('aba-ativos').classList.toggle('ativa', aba === 'ativos');
-      document.getElementById('aba-historico').classList.toggle('ativa', aba === 'historico');
-      renderizar();
-    }
-
-    // 5. RENDERIZAÇÃO
+    // 5. RENDERIZAR CARDS DOS PEDIDOS
     function renderizar() {
-      carregarDados();
       const container = document.getElementById('container-pedidos');
       container.innerHTML = "";
 
-      const listaExibir = abaAtual === 'ativos' ? pedidosAtivos : historicoPedidos;
-
-      if (listaExibir.length === 0) {
-        container.innerHTML = `<div class="vazio-msg">
-          ${abaAtual === 'ativos' ? '🛎️ Nenhum pedido pendente no momento.' : '📜 Nenhum pedido no histórico ainda.'}
-        </div>`;
+      if (pedidosAtivos.length === 0) {
+        container.innerHTML = `<div class="vazio-msg">🛎️ Nenhum pedido pendente no momento.</div>`;
         return;
       }
 
-      listaExibir.forEach((p, index) => {
-        // Card de Fechamento de Turno
-        if (p.tipo === 'fechamento') {
-          const cardFechamento = document.createElement('div');
-          cardFechamento.className = 'card-fechamento';
-          cardFechamento.innerHTML = `
-            <div>
-              <h3>📅 TURNO FINALIZADO - ${p.data} (${p.hora})</h3>
-              <p style="color:#a8a8b3; font-size:0.85rem; margin-top:3px;">Total de ${p.qtdPedidos} pedidos entregues nesta jornada.</p>
-            </div>
-            <span>TOTAL: R$ ${p.totalVendido.toFixed(2).replace('.', ',')}</span>
-          `;
-          container.appendChild(cardFechamento);
-          return;
-        }
-
-        // Card de Pedido Normal
+      pedidosAtivos.forEach((p) => {
         const card = document.createElement('div');
-        card.className = `card-pedido ${p.novo && abaAtual === 'ativos' ? 'novo-pedido' : ''}`;
-
-        card.onclick = (e) => {
-          if (!e.target.tagName.includes('BUTTON')) {
-            p.novo = false;
-            card.classList.remove('novo-pedido');
-            salvarDados();
-          }
-        };
+        card.className = 'card-pedido';
 
         const taxaVal = parseFloat(p.taxa) || 0;
         const totalVal = parseFloat(p.total) || 0;
@@ -350,116 +257,58 @@
           <div>
             <div class="financeiro-resumo">
               <span>Total do Pedido:</span>
-              <span class="val-total" style="${p.status === 'cancelado' ? 'text-decoration: line-through; color: #8d8d99;' : ''}">
-                R$ ${totalVal.toFixed(2).replace('.', ',')}
-              </span>
+              <span class="val-total">R$ ${totalVal.toFixed(2).replace('.', ',')}</span>
             </div>
 
-            ${abaAtual === 'ativos' ? `
-              <div class="acoes-card">
-                <button class="btn-concluir" onclick="concluirPedido(this, ${index})">
-                  ✅ Concluir
-                </button>
-                <button class="btn-cancelar" onclick="cancelarPedido(this, ${index})">
-                  ❌ Cancelar
-                </button>
-              </div>
-            ` : `
-              <div class="${p.status === 'cancelado' ? 'tag-cancelado' : 'tag-concluido'}">
-                ${p.status === 'cancelado' ? `❌ Cancelado às ${p.horaCancelamento || ''}` : `✔️ Entregue às ${p.horaConclusao || ''}`}
-              </div>
-            `}
+            <div class="acoes-card">
+              <button class="btn-concluir" onclick="atualizarStatusPedido('${p.id}', 'entregue', this)">
+                ✅ Concluir
+              </button>
+              <button class="btn-cancelar" onclick="atualizarStatusPedido('${p.id}', 'cancelado', this)">
+                ❌ Cancelar
+              </button>
+            </div>
           </div>
         `;
 
         container.appendChild(card);
-
-        if (p.novo && abaAtual === 'ativos') {
-          setTimeout(() => {
-            p.novo = false;
-            card.classList.remove('novo-pedido');
-            salvarDados();
-          }, 30000);
-        }
       });
     }
 
-    // 6. CONFIRMAÇÃO DUPLA: CONCLUIR PEDIDO
-    function concluirPedido(btn, index) {
+    // 6. ATUALIZAR STATUS NO GOOGLE SHEETS
+    function atualizarStatusPedido(idPedido, novoStatus, btn) {
       if (btn.classList.contains('confirmar')) {
-        const pedidoConcluido = pedidosAtivos.splice(index, 1)[0];
-        pedidoConcluido.horaConclusao = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        pedidoConcluido.novo = false;
-        pedidoConcluido.status = 'entregue';
+        btn.disabled = true;
+        btn.innerHTML = "Aguarde...";
 
-        historicoPedidos.unshift(pedidoConcluido);
-        salvarDados();
-        renderizar();
+        fetch(URL_API, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "atualizar_status",
+            id: idPedido,
+            status: novoStatus
+          })
+        }).then(() => {
+          setTimeout(carregarDados, 800);
+        });
       } else {
         btn.classList.add('confirmar');
-        btn.innerHTML = "⚠️ Confirmar?";
+        btn.innerHTML = novoStatus === 'entregue' ? "⚠️ Confirmar?" : "⚠️ Cancelar?";
 
         setTimeout(() => {
           if (btn) {
             btn.classList.remove('confirmar');
-            btn.innerHTML = "✅ Concluir";
+            btn.innerHTML = novoStatus === 'entregue' ? "✅ Concluir" : "❌ Cancelar";
           }
         }, 4000);
       }
     }
 
-    // 7. CONFIRMAÇÃO DUPLA: CANCELAR PEDIDO
-    function cancelarPedido(btn, index) {
-      if (btn.classList.contains('confirmar')) {
-        const pedidoCancelado = pedidosAtivos.splice(index, 1)[0];
-        pedidoCancelado.horaCancelamento = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        pedidoCancelado.novo = false;
-        pedidoCancelado.status = 'cancelado';
-
-        historicoPedidos.unshift(pedidoCancelado);
-        salvarDados();
-        renderizar();
-      } else {
-        btn.classList.add('confirmar');
-        btn.innerHTML = "⚠️ Cancelar?";
-
-        setTimeout(() => {
-          if (btn) {
-            btn.classList.remove('confirmar');
-            btn.innerHTML = "❌ Cancelar";
-          }
-        }, 4000);
-      }
-    }
-
-    // 8. FINALIZAR TURNO
-    function finalizarTurno() {
-      const pedidosEntregues = historicoPedidos.filter(p => p.tipo !== 'fechamento' && p.status !== 'cancelado');
-      const totalVendido = pedidosEntregues.reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
-
-      if (confirm(`Deseja fechar o turno atual?\n\n- Total Vendido: R$ ${totalVendido.toFixed(2)}\n- Pedidos Entregues: ${pedidosEntregues.length}`)) {
-        const agora = new Date();
-        const registroFechamento = {
-          tipo: 'fechamento',
-          data: agora.toLocaleDateString('pt-BR'),
-          hora: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-          totalVendido: totalVendido,
-          qtdPedidos: pedidosEntregues.length
-        };
-
-        historicoPedidos.unshift(registroFechamento);
-        pedidosAtivos = [];
-
-        salvarDados();
-        mudarAba('historico');
-      }
-    }
-
-    // Sincronização em tempo real (mesmo dispositivo/navegador)
-    window.addEventListener('storage', () => { renderizar(); });
-    setInterval(renderizar, 1500);
-
-    renderizar();
+    // Atualização em tempo real (busca na nuvem a cada 3 segundos)
+    setInterval(carregarDados, 3000);
+    carregarDados();
   </script>
 </body>
 </html>
