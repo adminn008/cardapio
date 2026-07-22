@@ -27,15 +27,18 @@
     }
     .btn-aba.ativa { background: #00875f; color: #fff; border-color: #00875f; }
 
-    .indicadores { display: flex; gap: 12px; align-items: center; }
+    .indicadores { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     .card-info { background: #121214; padding: 8px 15px; border-radius: 8px; border: 1px solid #29292e; }
     .card-info label { display: block; font-size: 0.75rem; color: #8d8d99; }
     .card-info strong { font-size: 1.1rem; color: #00b37e; }
 
-    .btn-zerar {
-      background: #da3751; color: #fff; border: none; padding: 8px 12px;
-      border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer;
+    .btn-acao {
+      border: none; padding: 8px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; color: #fff;
     }
+    .btn-som { background: #9b51e0; }
+    .btn-som.ativo { background: #00875f; }
+    .btn-teste { background: #fba94c; color: #121214; }
+    .btn-zerar { background: #da3751; }
 
     /* GRID DIVIDIDA PARA VÁRIOS PEDIDOS */
     .grid-pedidos {
@@ -51,7 +54,7 @@
       justify-content: space-between; position: relative; transition: all 0.3s;
     }
 
-    /* DESTAQUE DE NOVO PEDIDO (30s) */
+    /* DESTAQUE DE NOVO PEDIDO */
     .card-pedido.novo-pedido {
       border-color: #fba94c;
       box-shadow: 0 0 15px rgba(251, 169, 76, 0.35);
@@ -62,6 +65,22 @@
       50% { border-color: #e16e0e; }
       100% { border-color: #fba94c; }
     }
+
+    /* CARD DE FECHAMENTO DE TURNO NO HISTÓRICO */
+    .card-fechamento {
+      grid-column: 1 / -1;
+      background: #221a30;
+      border: 2px dashed #9b51e0;
+      border-radius: 12px;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .card-fechamento h3 { color: #d4a5ff; font-size: 1.1rem; }
+    .card-fechamento span { font-weight: 800; color: #00b37e; font-size: 1.2rem; }
 
     .pedido-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -91,7 +110,6 @@
     }
     .val-total { color: #00b37e; font-weight: 800; font-size: 1.1rem; }
 
-    /* BOTÃO DE CONFIRMAÇÃO DUPLA */
     .btn-concluir {
       width: 100%; padding: 12px; border: none; border-radius: 8px;
       background: #00875f; color: #fff; font-weight: 700; font-size: 1rem;
@@ -118,15 +136,17 @@
       <h1>📺 Painel KDS <span>(Cozinha / Gestão)</span></h1>
     </div>
     <div class="indicadores">
+      <button class="btn-acao btn-som" id="btn-ativar-som" onclick="ativarSomAlertas()">🔇 Clique p/ Ativar Som</button>
+      <button class="btn-acao btn-teste" onclick="simularPedidoDoSite()">🧪 Simular Pedido</button>
       <div class="card-info">
         <label>Hora Atual</label>
         <strong id="relogio-txt">00:00:00</strong>
       </div>
       <div class="card-info">
-        <label>Faturamento do Dia</label>
+        <label>Total do Turno</label>
         <strong id="total-dia-txt">R$ 0,00</strong>
       </div>
-      <button class="btn-zerar" onclick="zerarDia()">Zerar Turno</button>
+      <button class="btn-acao btn-zerar" onclick="finalizarTurno()">🔒 Finalizar Turno</button>
     </div>
   </header>
 
@@ -143,7 +163,61 @@
   <main class="grid-pedidos" id="container-pedidos"></main>
 
   <script>
-    // 1. MANTER TELA ACESA (WAKE LOCK)
+    // 1. GERADOR DE SOM SINTETIZADO ("DING-DONG")
+    let somHabilitado = false;
+    let audioCtx = null;
+
+    function ativarSomAlertas() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      somHabilitado = true;
+      const btn = document.getElementById('btn-ativar-som');
+      btn.className = "btn-acao btn-som ativo";
+      btn.innerHTML = "🔊 Som de Alerta Ativo";
+      
+      // Toca um som curto de teste pra confirmar
+      tocarSomPedido();
+    }
+
+    function tocarSomPedido() {
+      if (!somHabilitado || !audioCtx) return;
+
+      try {
+        // Nota 1 (Ding)
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
+        gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start();
+        osc1.stop(audioCtx.currentTime + 0.6);
+
+        // Nota 2 (Dong)
+        setTimeout(() => {
+          const osc2 = audioCtx.createOscillator();
+          const gain2 = audioCtx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+          gain2.gain.setValueAtTime(0.4, audioCtx.currentTime);
+          gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.9);
+          osc2.connect(gain2);
+          gain2.connect(audioCtx.destination);
+          osc2.start();
+          osc2.stop(audioCtx.currentTime + 0.9);
+        }, 150);
+      } catch (err) {
+        console.log("Erro ao tocar som:", err);
+      }
+    }
+
+    // 2. MANTER TELA ACESA (WAKE LOCK)
     async function ativarWakeLock() {
       try {
         if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
@@ -154,19 +228,31 @@
       if (document.visibilityState === 'visible') ativarWakeLock();
     });
 
-    // 2. RELÓGIO EM TEMPO REAL
+    // 3. RELÓGIO EM TEMPO REAL
     setInterval(() => {
       document.getElementById('relogio-txt').textContent = new Date().toLocaleTimeString('pt-BR');
     }, 1000);
 
-    // 3. ESTADO E CARREGAMENTO DOS DADOS (SEM DADOS FALSOS)
+    // 4. ESTADO DOS PEDIDOS E DETECÇÃO DE NOVOS
     let abaAtual = 'ativos';
     let pedidosAtivos = [];
     let historicoPedidos = [];
+    let ultimosIdsAtivos = [];
 
     function carregarDados() {
-      pedidosAtivos = JSON.parse(localStorage.getItem('pedidos_ativos')) || [];
+      const novosAtivos = JSON.parse(localStorage.getItem('pedidos_ativos')) || [];
       historicoPedidos = JSON.parse(localStorage.getItem('historico_pedidos')) || [];
+
+      // Detecta se entrou um novo pedido para tocar o som
+      if (ultimosIdsAtivos.length > 0) {
+        const novosPedidosEntraram = novosAtivos.filter(p => !ultimosIdsAtivos.includes(p.id));
+        if (novosPedidosEntraram.length > 0) {
+          tocarSomPedido();
+        }
+      }
+
+      pedidosAtivos = novosAtivos;
+      ultimosIdsAtivos = pedidosAtivos.map(p => p.id);
       atualizarContadoresEFaturamento();
     }
 
@@ -178,10 +264,13 @@
 
     function atualizarContadoresEFaturamento() {
       document.getElementById('qtd-ativos').textContent = pedidosAtivos.length;
-      document.getElementById('qtd-historico').textContent = historicoPedidos.length;
+      
+      // Filtra apenas pedidos reais do histórico (exclui os registros de fechamento de turno)
+      const pedidosReaisHistorico = historicoPedidos.filter(p => p.tipo !== 'fechamento');
+      document.getElementById('qtd-historico').textContent = pedidosReaisHistorico.length;
 
-      // Soma o total apenas dos pedidos CONCLUÍDOS no dia
-      const totalVendido = historicoPedidos.reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
+      // Soma o total apenas dos pedidos concluídos no turno atual
+      const totalVendido = pedidosReaisHistorico.reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
       document.getElementById('total-dia-txt').textContent = 
         totalVendido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
@@ -193,7 +282,7 @@
       renderizar();
     }
 
-    // 4. RENDERIZAÇÃO NA TELA
+    // 5. RENDERIZAÇÃO NA TELA
     function renderizar() {
       carregarDados();
       const container = document.getElementById('container-pedidos');
@@ -203,16 +292,31 @@
 
       if (listaExibir.length === 0) {
         container.innerHTML = `<div class="vazio-msg">
-          ${abaAtual === 'ativos' ? '🛎️ Nenhum pedido pendente no momento.' : '📜 Nenhum pedido concluído ainda hoje.'}
+          ${abaAtual === 'ativos' ? '🛎️ Nenhum pedido pendente no momento.' : '📜 Nenhum pedido no histórico ainda.'}
         </div>`;
         return;
       }
 
       listaExibir.forEach((p, index) => {
+        // Se for um registro de Fechamento de Turno na aba de histórico:
+        if (p.tipo === 'fechamento') {
+          const cardFechamento = document.createElement('div');
+          cardFechamento.className = 'card-fechamento';
+          cardFechamento.innerHTML = `
+            <div>
+              <h3>📅 TURNO FINALIZADO - ${p.data} (${p.hora})</h3>
+              <p style="color:#a8a8b3; font-size:0.85rem; margin-top:3px;">Total de ${p.qtdPedidos} pedidos entregues nesta jornada.</p>
+            </div>
+            <span>TOTAL: R$ ${p.totalVendido.toFixed(2).replace('.', ',')}</span>
+          `;
+          container.appendChild(cardFechamento);
+          return;
+        }
+
+        // Se for um card de pedido comum:
         const card = document.createElement('div');
         card.className = `card-pedido ${p.novo && abaAtual === 'ativos' ? 'novo-pedido' : ''}`;
 
-        // Remove o brilho de "novo pedido" ao clicar nele
         card.onclick = (e) => {
           if (!e.target.classList.contains('btn-concluir')) {
             p.novo = false;
@@ -264,7 +368,6 @@
 
         container.appendChild(card);
 
-        // Desliga o efeito piscante sozinho após 30 segundos
         if (p.novo && abaAtual === 'ativos') {
           setTimeout(() => {
             p.novo = false;
@@ -275,15 +378,14 @@
       });
     }
 
-    // 5. CONFIRMAÇÃO DUPLA E ENVIO PARA O HISTÓRICO
+    // 6. CONFIRMAÇÃO DUPLA DE CONCLUSÃO
     function concluirPedido(btn, index) {
       if (btn.classList.contains('confirmar')) {
-        // Move o pedido da lista de Ativos -> Histórico
         const pedidoConcluido = pedidosAtivos.splice(index, 1)[0];
         pedidoConcluido.horaConclusao = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         pedidoConcluido.novo = false;
 
-        historicoPedidos.unshift(pedidoConcluido); // Adiciona no topo do histórico
+        historicoPedidos.unshift(pedidoConcluido);
         salvarDados();
         renderizar();
       } else {
@@ -299,27 +401,58 @@
       }
     }
 
-    // 6. ZERAR O DIA (NOVO TURNO)
-    function zerarDia() {
-      if (confirm("Deseja mesmo zerar o faturamento e o histórico do dia para iniciar um novo turno?")) {
-        localStorage.removeItem('historico_pedidos');
-        historicoPedidos = [];
+    // 7. FINALIZAR TURNO (REGISTRA NO HISTÓRICO E LIMPA TELA)
+    function finalizarTurno() {
+      const pedidosReaisHistorico = historicoPedidos.filter(p => p.tipo !== 'fechamento');
+      const totalVendido = pedidosReaisHistorico.reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
+
+      if (confirm(`Deseja fechar o turno atual?\n\n- Total Vendido: R$ ${totalVendido.toFixed(2)}\n- Pedidos Entregues: ${pedidosReaisHistorico.length}`)) {
+        const agora = new Date();
+        const registroFechamento = {
+          tipo: 'fechamento',
+          data: agora.toLocaleDateString('pt-BR'),
+          hora: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          totalVendido: totalVendido,
+          qtdPedidos: pedidosReaisHistorico.length
+        };
+
+        // Adiciona o resumo no topo do histórico
+        historicoPedidos.unshift(registroFechamento);
+        pedidosAtivos = []; // Limpa os ativos
+
         salvarDados();
-        renderizar();
+        mudarAba('historico');
       }
     }
 
-    // 7. SINCRONIZAÇÃO EM TEMPO REAL ENTRE ABAS/DISPOSITIVOS
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'pedidos_ativos' || e.key === 'historico_pedidos') {
-        renderizar();
-      }
-    });
+    // SIMULAR PEDIDO DE TESTE
+    function simularPedidoDoSite() {
+      const pedidosSalvos = JSON.parse(localStorage.getItem('pedidos_ativos')) || [];
+      const idAleatorio = Math.floor(100 + Math.random() * 900);
+      
+      const novoPedido = {
+        id: idAleatorio,
+        hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        cliente: "Cliente Teste #" + idAleatorio,
+        endereco: "Rua Exemplo, 123 - Centro",
+        taxa: 7.50,
+        pagamento: "PIX",
+        itens: "1x Feijoada Completa (G), 1x Refri Lata",
+        obs: "Sem pimenta no torresmo",
+        total: 34.40,
+        novo: true
+      };
 
-    // Verifica novos pedidos a cada 2 segundos automaticamente
-    setInterval(renderizar, 2000);
+      pedidosSalvos.push(novoPedido);
+      localStorage.setItem('pedidos_ativos', JSON.stringify(pedidosSalvos));
+      mudarAba('ativos');
+      renderizar();
+    }
 
-    // Inicialização
+    // Sincronização automática constante
+    window.addEventListener('storage', () => { renderizar(); });
+    setInterval(renderizar, 1500); // Checa mudanças a cada 1,5s
+
     renderizar();
   </script>
 </body>
