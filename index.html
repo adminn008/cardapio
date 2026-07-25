@@ -372,9 +372,9 @@
 
           <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
             <div class="form-group">
-              <label>CEP *</label>
-              <input type="text" id="cep" class="form-input" placeholder="83000-000" maxlength="9" onkeyup="consultarCEP(); salvarFormulario();">
-            </div>
+  <label>CEP *</label>
+  <input type="text" id="cep" class="form-input" placeholder="83000-000" maxlength="9" oninput="mascaraCEP(this); consultarCEP(); salvarFormulario();">
+</div>
             <div class="form-group">
               <label>Endereço (Rua / Bairro) *</label>
               <input type="text" id="endereco" class="form-input" placeholder="Rua e Bairro" required oninput="salvarFormulario()">
