@@ -159,8 +159,8 @@
     <div class="carousel-container">
       <div class="carousel-slides" id="carousel-slides">
         <div class="carousel-slide">
-          <h3>🔥 Destaque da Semana</h3>
-          <p>Experimente a nossa Feijoada Completa G! Acompanha couve refogada, torresmo crocante e arroz fresquinho.</p>
+          <h3>🔥 Salgados Fresquinhos</h3>
+          <p>Massa macia e saborosa, fritos e assados na medida certa. Sabores irresistíveis de Frango, Carne, Presunto com Mussarela e Frango com Catupiry!</p>
         </div>
         <div class="carousel-slide">
           <h3>🛵 Taxa de Entrega Dinâmica</h3>
@@ -181,20 +181,135 @@
     <!-- PASSO 1: MENU -->
     <div id="step-menu">
       <div class="search-box">
-        🔍 <input type="text" id="search-input" placeholder="Buscar prato, hambúrguer, bebida..." onkeyup="filtrarProdutos()">
+        🔍 <input type="text" id="search-input" placeholder="Buscar esfirra, risole, marmita, bebida..." onkeyup="filtrarProdutos()">
       </div>
 
       <div class="categories">
         <button class="cat-btn active" onclick="filtrarCategoria('todas', this)">🔥 Todos</button>
+        <button class="cat-btn" onclick="filtrarCategoria('esfirras', this)">🥟 Esfirras</button>
+        <button class="cat-btn" onclick="filtrarCategoria('risoles', this)">🥐 Risoles</button>
         <button class="cat-btn" onclick="filtrarCategoria('marmitas', this)">🍱 Marmitas</button>
-        <button class="cat-btn" onclick="filtrarCategoria('burgers', this)">🍔 Lanches</button>
         <button class="cat-btn" onclick="filtrarCategoria('bebidas', this)">🥤 Bebidas</button>
-        <button class="cat-btn" onclick="filtrarCategoria('sobremesas', this)">🍰 Sobremesas</button>
       </div>
 
       <div class="grid-menu">
+        <!-- ESFIRRAS -->
+        <div class="food-card" data-cat="esfirras" data-nome="esfirra de frango">
+          <span class="badge-tag">Salgado</span>
+          <div class="food-title">Esfirra de Frango</div>
+          <div class="food-desc">Massa macia e saborosa recheada com frango temperado selecionado. Assada na medida certa.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 6,00</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('esfirra_frango', -1)">-</button>
+              <span class="qty-val" id="qty-esfirra_frango">0</span>
+              <button class="qty-btn" onclick="alterarQtd('esfirra_frango', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-card" data-cat="esfirras" data-nome="esfirra de carne">
+          <span class="badge-tag">Salgado</span>
+          <div class="food-title">Esfirra de Carne</div>
+          <div class="food-desc">Massa macia com recheio suculento de carne bem temperada. Tudo sempre fresquinho!</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 6,00</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('esfirra_carne', -1)">-</button>
+              <span class="qty-val" id="qty-esfirra_carne">0</span>
+              <button class="qty-btn" onclick="alterarQtd('esfirra_carne', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-card" data-cat="esfirras" data-nome="esfirra de presunto mussarela">
+          <span class="badge-tag">Salgado</span>
+          <div class="food-title">Esfirra Presunto & Mussarela</div>
+          <div class="food-desc">Clássica e deliciosa combinação de presunto e queijo mussarela derretido.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 6,50</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('esfirra_presunto', -1)">-</button>
+              <span class="qty-val" id="qty-esfirra_presunto">0</span>
+              <button class="qty-btn" onclick="alterarQtd('esfirra_presunto', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-card" data-cat="esfirras" data-nome="esfirra de frango com catupiry">
+          <span class="badge-tag">Favorito</span>
+          <div class="food-title">Esfirra Frango c/ Catupiry</div>
+          <div class="food-desc">Frango temperado cremoso com autêntico Catupiry em uma massa fresquinha.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 7,00</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('esfirra_catupiry', -1)">-</button>
+              <span class="qty-val" id="qty-esfirra_catupiry">0</span>
+              <button class="qty-btn" onclick="alterarQtd('esfirra_catupiry', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RISOLES -->
+        <div class="food-card" data-cat="risoles" data-nome="risole de frango">
+          <span class="badge-tag">Crocante</span>
+          <div class="food-title">Risole de Frango</div>
+          <div class="food-desc">Frito na medida certa, super crocante por fora e macio por dentro com recheio de frango.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 6,00</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('risole_frango', -1)">-</button>
+              <span class="qty-val" id="qty-risole_frango">0</span>
+              <button class="qty-btn" onclick="alterarQtd('risole_frango', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-card" data-cat="risoles" data-nome="risole de carne">
+          <span class="badge-tag">Crocante</span>
+          <div class="food-title">Risole de Carne</div>
+          <div class="food-desc">Massa dourada e crocante recheada com carne moída temperada artesanalmente.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 6,00</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('risole_carne', -1)">-</button>
+              <span class="qty-val" id="qty-risole_carne">0</span>
+              <button class="qty-btn" onclick="alterarQtd('risole_carne', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-card" data-cat="risoles" data-nome="risole de presunto mussarela">
+          <span class="badge-tag">Crocante</span>
+          <div class="food-title">Risole Presunto & Mussarela</div>
+          <div class="food-desc">Presunto selecionado e muita mussarela derretida empanada e frita na hora.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 6,50</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('risole_presunto', -1)">-</button>
+              <span class="qty-val" id="qty-risole_presunto">0</span>
+              <button class="qty-btn" onclick="alterarQtd('risole_presunto', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="food-card" data-cat="risoles" data-nome="risole de frango com catupiry">
+          <span class="badge-tag">Favorito</span>
+          <div class="food-title">Risole Frango c/ Catupiry</div>
+          <div class="food-desc">Recheio generoso de frango cremoso com Catupiry envolvido em massa crocante.</div>
+          <div class="food-footer">
+            <div class="food-price">R$ 7,00</div>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="alterarQtd('risole_catupiry', -1)">-</button>
+              <span class="qty-val" id="qty-risole_catupiry">0</span>
+              <button class="qty-btn" onclick="alterarQtd('risole_catupiry', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MARMITAS -->
         <div class="food-card" data-cat="marmitas" data-nome="feijoada completa">
-          <span class="badge-tag">Mais Pedido</span>
+          <span class="badge-tag">Marmita</span>
           <div class="food-title">Feijoada Completa G</div>
           <div class="food-desc">Acompanha couve refogada, farofa da casa, torresmo crocante e arroz branco.</div>
           <div class="food-footer">
@@ -208,6 +323,7 @@
         </div>
 
         <div class="food-card" data-cat="marmitas" data-nome="bife acebolado">
+          <span class="badge-tag">Marmita</span>
           <div class="food-title">Bife Acebolado M</div>
           <div class="food-desc">Bife acebolado suculento, arroz fresquinho, feijão caseiro e batata frita.</div>
           <div class="food-footer">
@@ -220,34 +336,9 @@
           </div>
         </div>
 
-        <div class="food-card" data-cat="burgers" data-nome="x-tudo artesanal">
-          <span class="badge-tag">Chef</span>
-          <div class="food-title">X-Tudo Artesanal</div>
-          <div class="food-desc">Burger 160g, queijo prato, bacon artesanal, ovo, alface, tomate e maionese especial.</div>
-          <div class="food-footer">
-            <div class="food-price">R$ 24,00</div>
-            <div class="qty-control">
-              <button class="qty-btn" onclick="alterarQtd('xtudo', -1)">-</button>
-              <span class="qty-val" id="qty-xtudo">0</span>
-              <button class="qty-btn" onclick="alterarQtd('xtudo', 1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="food-card" data-cat="burgers" data-nome="smash duplo cheese">
-          <div class="food-title">Smash Duplo Cheese</div>
-          <div class="food-desc">2x Smash burger 80g, duplo cheddar fatiado e molho da casa no pão brioche.</div>
-          <div class="food-footer">
-            <div class="food-price">R$ 22,50</div>
-            <div class="qty-control">
-              <button class="qty-btn" onclick="alterarQtd('smash', -1)">-</button>
-              <span class="qty-val" id="qty-smash">0</span>
-              <button class="qty-btn" onclick="alterarQtd('smash', 1)">+</button>
-            </div>
-          </div>
-        </div>
-
+        <!-- BEBIDAS -->
         <div class="food-card" data-cat="bebidas" data-nome="refrigerante lata 350ml">
+          <span class="badge-tag">Bebida</span>
           <div class="food-title">Refri Lata 350ml</div>
           <div class="food-desc">Coca-Cola, Guaraná Antarctica ou Fanta Laranja (bem gelada).</div>
           <div class="food-footer">
@@ -256,20 +347,6 @@
               <button class="qty-btn" onclick="alterarQtd('refri', -1)">-</button>
               <span class="qty-val" id="qty-refri">0</span>
               <button class="qty-btn" onclick="alterarQtd('refri', 1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="food-card" data-cat="sobremesas" data-nome="pudim de leite moça">
-          <span class="badge-tag">Novo</span>
-          <div class="food-title">Pudim de Leite Moça</div>
-          <div class="food-desc">Fatia generosa de pudim tradicional super cremoso com calda de caramelo.</div>
-          <div class="food-footer">
-            <div class="food-price">R$ 8,50</div>
-            <div class="qty-control">
-              <button class="qty-btn" onclick="alterarQtd('pudim', -1)">-</button>
-              <span class="qty-val" id="qty-pudim">0</span>
-              <button class="qty-btn" onclick="alterarQtd('pudim', 1)">+</button>
             </div>
           </div>
         </div>
@@ -339,7 +416,7 @@
 
           <div class="form-group">
             <label>Observações do Pedido</label>
-            <textarea id="obs" class="form-input" rows="2" placeholder="Tirar cebola, caprichar no molho..." oninput="salvarFormulario()"></textarea>
+            <textarea id="obs" class="form-input" rows="2" placeholder="Ponto de referência, caprichar na embalagem..." oninput="salvarFormulario()"></textarea>
           </div>
 
           <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin: 20px 0;">
