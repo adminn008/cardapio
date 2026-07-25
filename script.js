@@ -178,7 +178,7 @@ function atualizarResumo() {
 }
 
 // CEP FIXO DA SUA LOJA (Coloque o CEP exato da sua loja aqui)
-const CEP_DA_LOJA = "83005000"; // Exemplo: Substitua pelo CEP real da sua loja
+const CEP_DA_LOJA = "83075010"; // Exemplo: Substitua pelo CEP real da sua loja
 
 // CÁLCULO DE TAXA BASEADO NA DISTÂNCIA REAL DA LOJA ATÉ O CLIENTE
 async function consultarCEP() {
@@ -205,7 +205,7 @@ async function consultarCEP() {
       
       // Se for o mesmo bairro da loja, taxa fixa menor
       if (dataCliente.bairro.toLowerCase() === dataLoja.bairro.toLowerCase()) {
-        taxaEntregaCalculada = 6.00; // Taxa fixa para o mesmo bairro
+        taxaEntregaCalculada = 5.00; // Taxa fixa para o mesmo bairro
         statusTxt.textContent = `📍 Mesmo bairro (${dataCliente.bairro}) - Taxa local!`;
       } else {
         // Se for outro bairro, calcula uma taxa progressiva baseada na diferença numérica dos CEPs 
@@ -213,10 +213,10 @@ async function consultarCEP() {
         let diferencaCep = Math.abs(parseInt(cepInput) - parseInt(CEP_DA_LOJA));
         
         // Regra de cálculo proporcional: base de R$ 8 + acréscimo por faixa de distância
-        let taxaCalculada = 8.00 + (Math.floor(diferencaCep / 1000) * 2.00);
+        let taxaCalculada = 3.00 + (Math.floor(diferencaCep / 1000) * 2.00);
         
         // Trava um teto máximo para não ficar absurdo (ex: máximo R$ 25,00)
-        taxaEntregaCalculada = Math.min(taxaCalculada, 25.00);
+        taxaEntregaCalculada = Math.min(taxaCalculada, 15.00);
 
         statusTxt.textContent = `📍 Bairro: ${dataCliente.bairro} (Calculado a partir da loja)`;
       }
