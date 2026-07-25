@@ -1,18 +1,36 @@
 // CONFIGURAÇÕES DO SISTEMA
-const SCRIPT_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI"; // Opcional
-const SEU_WHATSAPP = "5541999999999"; // Substitua pelo seu WhatsApp comercial com DDD
+const SCRIPT_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI"; // Cole aqui o link da planilha se já tiver configurado
+const SEU_WHATSAPP = "5541999682836"; // Substitua pelo seu WhatsApp comercial com DDD
 const CHAVE_PIX = "00.000.000/0001-00";
 
 const PRECOS = {
+  esfirra_frango: 6.00,
+  esfirra_carne: 6.00,
+  esfirra_presunto: 6.50,
+  esfirra_catupiry: 7.00,
+  risole_frango: 6.00,
+  risole_carne: 6.00,
+  risole_presunto: 6.50,
+  risole_catupiry: 7.00,
   feijoada: 26.90,
   bife: 21.90,
-  xtudo: 24.00,
-  smash: 22.50,
-  refri: 6.00,
-  pudim: 8.50
+  refri: 6.00
 };
 
-let carrinho = { feijoada: 0, bife: 0, xtudo: 0, smash: 0, refri: 0, pudim: 0 };
+let carrinho = {
+  esfirra_frango: 0,
+  esfirra_carne: 0,
+  esfirra_presunto: 0,
+  esfirra_catupiry: 0,
+  risole_frango: 0,
+  risole_carne: 0,
+  risole_presunto: 0,
+  risole_catupiry: 0,
+  feijoada: 0,
+  bife: 0,
+  refri: 0
+};
+
 let taxaEntregaCalculada = null;
 let slideAtual = 0;
 
@@ -37,7 +55,6 @@ function toggleSemNumero() {
   const check = document.getElementById("check-sn");
   const inputNum = document.getElementById("numero");
 
-  // Inverte o estado atual do checkbox se acionado pelo clique na div inteira
   if (event && event.target !== check) {
     check.checked = !check.checked;
   }
@@ -284,35 +301,26 @@ function processarEnvioPedido(e) {
   let subtotal = 0;
   let listaItensDescritiva = [];
 
-  if (carrinho.feijoada > 0) {
-    let val = carrinho.feijoada * PRECOS.feijoada;
-    listaItensDescritiva.push(`${carrinho.feijoada}x Feijoada Completa G (R$ ${val.toFixed(2).replace('.', ',')})`);
-    subtotal += val;
-  }
-  if (carrinho.bife > 0) {
-    let val = carrinho.bife * PRECOS.bife;
-    listaItensDescritiva.push(`${carrinho.bife}x Bife Acebolado M (R$ ${val.toFixed(2).replace('.', ',')})`);
-    subtotal += val;
-  }
-  if (carrinho.xtudo > 0) {
-    let val = carrinho.xtudo * PRECOS.xtudo;
-    listaItensDescritiva.push(`${carrinho.xtudo}x X-Tudo Artesanal (R$ ${val.toFixed(2).replace('.', ',')})`);
-    subtotal += val;
-  }
-  if (carrinho.smash > 0) {
-    let val = carrinho.smash * PRECOS.smash;
-    listaItensDescritiva.push(`${carrinho.smash}x Smash Duplo Cheese (R$ ${val.toFixed(2).replace('.', ',')})`);
-    subtotal += val;
-  }
-  if (carrinho.refri > 0) {
-    let val = carrinho.refri * PRECOS.refri;
-    listaItensDescritiva.push(`${carrinho.refri}x Refri Lata 350ml (R$ ${val.toFixed(2).replace('.', ',')})`);
-    subtotal += val;
-  }
-  if (carrinho.pudim > 0) {
-    let val = carrinho.pudim * PRECOS.pudim;
-    listaItensDescritiva.push(`${carrinho.pudim}x Pudim de Leite Moça (R$ ${val.toFixed(2).replace('.', ',')})`);
-    subtotal += val;
+  const nomesProdutosDescricao = {
+    esfirra_frango: "Esfirra de Frango",
+    esfirra_carne: "Esfirra de Carne",
+    esfirra_presunto: "Esfirra Presunto & Mussarela",
+    esfirra_catupiry: "Esfirra Frango c/ Catupiry",
+    risole_frango: "Risole de Frango",
+    risole_carne: "Risole de Carne",
+    risole_presunto: "Risole Presunto & Mussarela",
+    risole_catupiry: "Risole Frango c/ Catupiry",
+    feijoada: "Feijoada Completa G",
+    bife: "Bife Acebolado M",
+    refri: "Refri Lata 350ml"
+  };
+
+  for (let item in carrinho) {
+    if (carrinho[item] > 0) {
+      let val = carrinho[item] * PRECOS[item];
+      listaItensDescritiva.push(`${carrinho[item]}x ${nomesProdutosDescricao[item]} (R$ ${val.toFixed(2).replace('.', ',')})`);
+      subtotal += val;
+    }
   }
 
   const taxaFinal = taxaEntregaCalculada !== null ? taxaEntregaCalculada : 0;
