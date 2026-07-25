@@ -111,18 +111,6 @@ function mascaraTelefone(input) {
   input.value = v;
 }
 
-// MÁSCARA AUTOMÁTICA DE CEP (xxxxx-xxx)
-function mascaraCEP(input) {
-  let v = input.value.replace(/\D/g, "");
-  if (v.length > 8) v = v.slice(0, 8);
-  
-  if (v.length > 5) {
-    v = v.replace(/^(\d{5})(\d{0,3})$/, "$1-$2");
-  }
-  
-  input.value = v;
-}
-
 // NAVEGAÇÃO DE ETAPAS
 function irParaEtapa(etapa) {
   document.getElementById("step-menu").classList.add("hidden");
@@ -188,10 +176,10 @@ function atualizarResumo() {
   }
 }
 
-// CEP FIXO DA SUA LOJA
-const CEP_DA_LOJA = "83075010";
+// CEP FIXO DA SUA LOJA (Coloque o CEP exato da sua loja aqui)
+const CEP_DA_LOJA = "83075010"; // Exemplo: Substitua pelo CEP real da sua loja
 
-// CÁLCULO DE TAXA BASEADO NA DISTÂNCIA DA LOJA ATÉ O CLIENTE
+// CÁLCULO DE TAXA BASEADO NA DISTÂNCIA REAL DA LOJA ATÉ O CLIENTE
 async function consultarCEP() {
   const cepInput = document.getElementById("cep").value.replace(/\D/g, "");
   const statusTxt = document.getElementById("cep-status");
@@ -199,6 +187,7 @@ async function consultarCEP() {
   if (cepInput.length === 8) {
     statusTxt.textContent = "🔍 Calculando distância exata da loja até você...";
     try {
+      // 1. Busca o endereço do cliente
       const resCliente = await fetch(`https://viacep.com.br/ws/${cepInput}/json/`);
       const dataCliente = await resCliente.json();
 
@@ -207,16 +196,20 @@ async function consultarCEP() {
         return;
       }
 
+      // 2. Busca o endereço da loja para garantir referência
       const resLoja = await fetch(`https://viacep.com.br/ws/${CEP_DA_LOJA}/json/`);
       const dataLoja = await resLoja.json();
 
       document.getElementById("endereco").value = `${dataCliente.logradouro}, Bairro: ${dataCliente.bairro}`;
       
+      // Se for o mesmo bairro da loja, taxa fixa menor
       if (dataCliente.bairro.toLowerCase() === dataLoja.bairro.toLowerCase()) {
-        taxaEntregaCalculada = 5.00;
+        taxaEntregaCalculada = 5.00; // Taxa fixa para o mesmo bairro
         statusTxt.textContent = `📍 Mesmo bairro (${dataCliente.bairro}) - Taxa local!`;
       } else {
+        // Se for outro bairro, calcula uma taxa progressiva baseada na diferença numérica dos CEPs 
         let diferencaCep = Math.abs(parseInt(cepInput) - parseInt(CEP_DA_LOJA));
+        
         let taxaCalculada = 3.00 + (Math.floor(diferencaCep / 1000) * 2.00);
         taxaEntregaCalculada = Math.min(taxaCalculada, 15.00);
 
@@ -257,27 +250,41 @@ function filtrarProdutos() {
   });
 }
 
-// CONTROLE DE MUDANÇA DE PAGAMENTO (PIX x OUTROS)
+// FUNÇÃO PARA PREENCHER OS ATALHOS RÁPIDOS DE PAGAMENTO
+function preencherDetalhe(valor) {
+  const input = document.getElementById("detalhe-pagamento");
+  if (input) {
+    input.value = valor;
+    salvarFormulario();
+  }
+}
+
 function mudarPagamento() {
   const val = document.getElementById("pagamento").value;
   const pixBox = document.getElementById("pix-box");
   const extraBox = document.getElementById("extra-pagamento-box");
   const labelExtra = document.getElementById("label-extra-pagamento");
   const inputExtra = document.getElementById("detalhe-pagamento");
+  const atalhosDinheiro = document.getElementById("atalhos-dinheiro");
+  const atalhosCartao = document.getElementById("atalhos-cartao");
 
   if (pixBox) pixBox.classList.add("hidden");
   if (extraBox) extraBox.classList.add("hidden");
+  if (atalhosDinheiro) atalhosDinheiro.classList.add("hidden");
+  if (atalhosCartao) atalhosCartao.classList.add("hidden");
 
   if (val === "PIX") {
     if (pixBox) pixBox.classList.remove("hidden");
   } else if (val === "Dinheiro") {
     if (extraBox) extraBox.classList.remove("hidden");
+    if (atalhosDinheiro) atalhosDinheiro.classList.remove("hidden");
     if (labelExtra) labelExtra.textContent = "💵 Precisa de troco para quanto?";
-    if (inputExtra) inputExtra.placeholder = "Ex: Troco para R$ 50,00 (ou 'Não precisa')";
+    if (inputExtra) inputExtra.placeholder = "Ex: Não precisa ou digite o valor";
   } else if (val === "Cartão de Crédito/Débito") {
     if (extraBox) extraBox.classList.remove("hidden");
-    if (labelExtra) labelExtra.textContent = "💳 Observação do Cartão";
-    if (inputExtra) inputExtra.placeholder = "Ex: Cartão de Crédito / Débito na entrega";
+    if (atalhosCartao) atalhosCartao.classList.remove("hidden");
+    if (labelExtra) labelExtra.textContent = "💳 Qual modalidade do cartão?";
+    if (inputExtra) inputExtra.placeholder = "Ex: Crédito ou Débito";
   }
 }
 
@@ -298,7 +305,7 @@ function salvarFormulario() {
     complemento: document.getElementById("complemento").value,
     obs: document.getElementById("obs").value,
     pagamento: document.getElementById("pagamento").value,
-    detalhePagamento: document.getElementById("detalhe-pagamento") ? document.getElementById("detalhe-pagamento").value : ""
+    detalhePagamento: document.getElementById("detalhe-pagamento")?.value || ""
   };
   localStorage.setItem("form_sabor_cia", JSON.stringify(dados));
 }
@@ -339,8 +346,9 @@ function carregarEstadoSalvo() {
       document.getElementById("pagamento").value = dados.pagamento;
       mudarPagamento();
     }
-    if (dados.detalhePagamento && document.getElementById("detalhe-pagamento")) {
-      document.getElementById("detalhe-pagamento").value = dados.detalhePagamento;
+    if (dados.detalhePagamento) {
+      const detalheInput = document.getElementById("detalhe-pagamento");
+      if (detalheInput) detalheInput.value = dados.detalhePagamento;
     }
   }
 
@@ -358,7 +366,7 @@ function processarEnvioPedido(e) {
   const comp = document.getElementById("complemento")?.value.trim() || "Nenhum";
   const obs = document.getElementById("obs")?.value.trim() || "Nenhuma";
   const pag = document.getElementById("pagamento").value;
-  const detalhePagamento = document.getElementById("detalhe-pagamento")?.value.trim() || "";
+  const detalhePag = document.getElementById("detalhe-pagamento")?.value.trim() || "";
 
   if (!nome || !tel || !end || !num) {
     alert("Por favor, preencha seu Nome, Telefone, Endereço e Número/S/N antes de enviar!");
@@ -400,15 +408,7 @@ function processarEnvioPedido(e) {
     itensTexto += `▪️ ${item}\n`;
   });
 
-  // Montagem da forma de pagamento detalhada para o WhatsApp e Planilha
-  let textoFormaPagamento = pag;
-  if (pag !== "PIX" && detalhePagamento) {
-    textoFormaPagamento += ` (${detalhePagamento})`;
-  } else if (pag === "PIX") {
-    textoFormaPagamento += ` (Comprovante será enviado no chat)`;
-  }
-
-  const agora = new Date();
+  const pagamentoCompleto = detalhePag ? `${pag} (${detalhePag})` : pag;
 
   if (SCRIPT_URL && SCRIPT_URL !== "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
     fetch(SCRIPT_URL, {
@@ -416,9 +416,9 @@ function processarEnvioPedido(e) {
       mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        data: agora.toLocaleString("pt-BR"),
+        data: new Date().toLocaleString("pt-BR"),
         nome, tel, endereco: `${end}, Nº ${num} (${comp})`,
-        itens: listaItensDescritiva.join(", "), obs, pagamento: textoFormaPagamento, total: totalFormatado
+        itens: listaItensDescritiva.join(", "), obs, pagamento: pagamentoCompleto, total: totalFormatado
       })
     }).catch(() => {});
   }
@@ -433,7 +433,7 @@ function processarEnvioPedido(e) {
     `📦 *Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n` +
     `🛵 *Taxa de Entrega:* ${taxaFormatada}\n` +
     `💰 *TOTAL GERAL:* *${totalFormatado}*\n\n` +
-    `💳 *Forma de Pagamento:* ${textoFormaPagamento}\n` +
+    `💳 *Forma de Pagamento:* ${pagamentoCompleto}\n` +
     `📝 *Observações:* ${obs}\n\n` +
     `_Pedido gerado via cardápio online_`;
 
@@ -454,4 +454,16 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", inicializar);
 } else {
   inicializar();
+}
+
+// MÁSCARA AUTOMÁTICA DE CEP (xxxxx-xxx)
+function mascaraCEP(input) {
+  let v = input.value.replace(/\D/g, "");
+  if (v.length > 8) v = v.slice(0, 8);
+  
+  if (v.length > 5) {
+    v = v.replace(/^(\d{5})(\d{0,3})$/, "$1-$2");
+  }
+  
+  input.value = v;
 }
