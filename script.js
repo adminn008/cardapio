@@ -69,14 +69,31 @@ function toggleSemNumero() {
   salvarFormulario();
 }
 
-// COPIAR CHAVE PIX
+// COPIAR CHAVE PIX COM MENSAGEM BONITA NA TELA (SEM ALERT DO NAVEGADOR)
 function copiarChavePix() {
   navigator.clipboard.writeText(CHAVE_PIX).then(() => {
-    alert("Chave Pix copiada com sucesso!");
+    const btn = document.getElementById("btn-copiar-pix");
+    
+    // Guarda o texto original do botão
+    const textoOriginal = btn.innerHTML;
+    
+    // Muda o botão para uma mensagem chamativa e bonita
+    btn.innerHTML = "✨ Chave Pix Copiada com Sucesso!";
+    btn.style.background = "var(--accent)";
+    btn.style.color = "#fff";
+    
+    // Depois de 2.5 segundos, o botão volta ao normal sozinho
+    setTimeout(() => {
+      btn.innerHTML = textoOriginal;
+      btn.style.background = "";
+      btn.style.color = "";
+    }, 2500);
+    
   }).catch(() => {
     alert("Erro ao copiar chave.");
   });
 }
+
 
 // MÁSCARA AUTOMÁTICA DE TELEFONE
 function mascaraTelefone(input) {
@@ -379,4 +396,17 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", inicializar);
 } else {
   inicializar();
+}
+
+// MÁSCARA AUTOMÁTICA DE CEP (xxxxx-xxx)
+function mascaraCEP(input) {
+  let v = input.value.replace(/\D/g, ""); // Remove tudo que não for número
+  if (v.length > 8) v = v.slice(0, 8);    // Limita a 8 números
+  
+  // Aplica o traço após os 5 primeiros dígitos
+  if (v.length > 5) {
+    v = v.replace(/^(\d{5})(\d{0,3})$/, "$1-$2");
+  }
+  
+  input.value = v;
 }
