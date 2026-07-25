@@ -401,13 +401,31 @@
           </div>
 
           <div class="form-group" style="margin-top: 16px;">
-            <label>Forma de Pagamento *</label>
-            <select id="pagamento" class="form-input" onchange="mudarPagamento(); salvarFormulario();">
-              <option value="PIX">⚡ PIX (Aprovação Instantânea)</option>
-              <option value="Cartão de Crédito/Débito">💳 Cartão na Entrega</option>
-              <option value="Dinheiro">💵 Dinheiro</option>
-            </select>
-          </div>
+  <label>Forma de Pagamento *</label>
+  <select id="pagamento" class="form-input" onchange="mudarPagamento(); salvarFormulario();">
+    <option value="PIX">⚡ PIX (Aprovação Instantânea)</option>
+    <option value="Cartão de Crédito/Débito">💳 Cartão na Entrega</option>
+    <option value="Dinheiro">💵 Dinheiro</option>
+  </select>
+</div>
+
+<!-- BLOCO DO PIX COM AVISO CHAMATIVO PARA O COMPROVANTE -->
+<div id="pix-box" class="form-group" style="background: rgba(0, 200, 83, 0.1); padding: 14px; border-radius: 10px; border: 1px dashed var(--accent);">
+  <p style="font-size: 0.85rem; color: var(--accent); margin-bottom: 6px;">🔑 Chave PIX CNPJ: <strong id="chave-pix-txt">00.000.000/0001-00</strong></p>
+  <button type="button" id="btn-copiar-pix" class="btn-copy" onclick="copiarChavePix()">📋 Copiar Chave PIX</button>
+  
+  <div style="margin-top: 12px; background: rgba(0, 200, 83, 0.15); padding: 10px; border-radius: 8px; border-left: 4px solid var(--accent);">
+    <p style="font-size: 0.8rem; color: #fff; font-weight: 700; line-height: 1.4;">
+      ⚠️ ATENÇÃO: Após enviar o pedido no WhatsApp, por favor mande o seu **comprovante de pagamento** aqui no chat para agilizar o preparo! 📲✨
+    </p>
+  </div>
+</div>
+
+<!-- CAMPO DINÂMICO PARA OS DEMAIS (TROCO OU AVISO DO CARTÃO) -->
+<div id="extra-pagamento-box" class="form-group hidden">
+  <label id="label-extra-pagamento">Detalhes do Pagamento</label>
+  <input type="text" id="detalhe-pagamento" class="form-input" placeholder="Ex: Precisa de troco para R$ 50,00" oninput="salvarFormulario()">
+</div>
 
           <div id="pix-box" class="form-group" style="background: rgba(0, 200, 83, 0.1); padding: 14px; border-radius: 10px; border: 1px dashed var(--accent);">
   <p style="font-size: 0.85rem; color: var(--accent); margin-bottom: 6px;">🔑 Chave PIX CNPJ: <strong id="chave-pix-txt">00.000.000/0001-00</strong></p>
