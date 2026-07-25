@@ -177,34 +177,59 @@ function atualizarResumo() {
   }
 }
 
-// CÁLCULO DINÂMICO VIA CEP
+// CEP FIXO DA SUA LOJA (Coloque o CEP exato da sua loja aqui)
+const CEP_DA_LOJA = "83005000"; // Exemplo: Substitua pelo CEP real da sua loja
+
+// CÁLCULO DE TAXA BASEADO NA DISTÂNCIA REAL DA LOJA ATÉ O CLIENTE
 async function consultarCEP() {
   const cepInput = document.getElementById("cep").value.replace(/\D/g, "");
   const statusTxt = document.getElementById("cep-status");
 
   if (cepInput.length === 8) {
-    statusTxt.textContent = "🔍 Buscando endereço e calculando taxa...";
+    statusTxt.textContent = "🔍 Calculando distância exata da loja até você...";
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${cepInput}/json/`);
-      const data = await res.json();
+      // 1. Busca o endereço do cliente
+      const resCliente = await fetch(`https://viacep.com.br/ws/${cepInput}/json/`);
+      const dataCliente = await resCliente.json();
 
-      if (!data.erro) {
-        document.getElementById("endereco").value = `${data.logradouro}, Bairro: ${data.bairro}`;
-        statusTxt.textContent = `📍 Localizado em ${data.localidade} - ${data.uf}`;
-
-        const digitoRegiao = parseInt(cepInput.charAt(5));
-        taxaEntregaCalculada = 5.00 + (digitoRegiao % 4) * 2.50;
-
-        salvarEstado();
-        atualizarResumo();
-      } else {
+      if (dataCliente.erro) {
         statusTxt.textContent = "⚠️ CEP não encontrado! Preencha o endereço manualmente.";
+        return;
       }
+
+      // 2. Busca o endereço da loja para garantir referência
+      const resLoja = await fetch(`https://viacep.com.br/ws/${CEP_DA_LOJA}/json/`);
+      const dataLoja = await resLoja.json();
+
+      document.getElementById("endereco").value = `${dataCliente.logradouro}, Bairro: ${dataCliente.bairro}`;
+      
+      // Se for o mesmo bairro da loja, taxa fixa menor
+      if (dataCliente.bairro.toLowerCase() === dataLoja.bairro.toLowerCase()) {
+        taxaEntregaCalculada = 6.00; // Taxa fixa para o mesmo bairro
+        statusTxt.textContent = `📍 Mesmo bairro (${dataCliente.bairro}) - Taxa local!`;
+      } else {
+        // Se for outro bairro, calcula uma taxa progressiva baseada na diferença numérica dos CEPs 
+        // (quanto mais distante a faixa de CEP, maior a taxa)
+        let diferencaCep = Math.abs(parseInt(cepInput) - parseInt(CEP_DA_LOJA));
+        
+        // Regra de cálculo proporcional: base de R$ 8 + acréscimo por faixa de distância
+        let taxaCalculada = 8.00 + (Math.floor(diferencaCep / 1000) * 2.00);
+        
+        // Trava um teto máximo para não ficar absurdo (ex: máximo R$ 25,00)
+        taxaEntregaCalculada = Math.min(taxaCalculada, 25.00);
+
+        statusTxt.textContent = `📍 Bairro: ${dataCliente.bairro} (Calculado a partir da loja)`;
+      }
+
+      salvarEstado();
+      atualizarResumo();
+
     } catch (err) {
-      statusTxt.textContent = "Erro ao buscar CEP. Verifique sua conexão.";
+      statusTxt.textContent = "Erro ao calcular rota. Verifique sua conexão.";
     }
   }
 }
+
 
 // FILTRAGEM
 function filtrarCategoria(cat, elemento) {
